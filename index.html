@@ -277,6 +277,9 @@
     <script>
         // 实验数据存储
         const experimentData = {
+            survey_id: null,        // 问卷ID（从URL参数获取）
+            user_id: null,          // 用户ID（从URL参数获取，可选）
+            respondent_id: null,    // 受访者ID（从URL参数获取，可选）
             view_reviews: false,
             click_view_reviews: null,
             click_load_more: [],
@@ -334,10 +337,34 @@
             return urlParams.get(name);
         }
 
+        // 初始化：获取URL参数并保存问卷ID等信息
+        function initExperimentData() {
+            // 获取问卷ID（支持多种参数名）
+            experimentData.survey_id = getUrlParameter('survey_id') || 
+                                      getUrlParameter('surveyId') || 
+                                      getUrlParameter('survey') ||
+                                      getUrlParameter('id') ||
+                                      null;
+            
+            // 获取用户ID（可选）
+            experimentData.user_id = getUrlParameter('user_id') || 
+                                    getUrlParameter('userId') || 
+                                    getUrlParameter('user') ||
+                                    null;
+            
+            // 获取受访者ID（可选）
+            experimentData.respondent_id = getUrlParameter('respondent_id') || 
+                                          getUrlParameter('respondentId') || 
+                                          getUrlParameter('respondent') ||
+                                          null;
+            
+            // 获取实验条件
+            experimentData.condition = getUrlParameter('condition') || 'rating';
+        }
+
         // 初始化评论摘要（根据实验条件）
         function initSummary() {
-            const condition = getUrlParameter('condition') || 'rating'; // 默认rating
-            experimentData.condition = condition;
+            const condition = experimentData.condition;
             const summaryContent = document.getElementById('summaryContent');
 
             if (condition === 'rating') {
@@ -493,7 +520,8 @@
 
         // 页面加载时初始化
         window.addEventListener('DOMContentLoaded', function() {
-            initSummary();
+            initExperimentData();  // 先初始化实验数据（获取问卷ID等）
+            initSummary();         // 再初始化评论摘要
         });
     </script>
 </body>
