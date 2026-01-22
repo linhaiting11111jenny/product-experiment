@@ -277,14 +277,37 @@
     <script>
         // 实验数据存储
         const experimentData = {
+            // 问卷和用户标识
             survey_id: null,        // 问卷ID（从URL参数获取）
             user_id: null,          // 用户ID（从URL参数获取，可选）
             respondent_id: null,    // 受访者ID（从URL参数获取，可选）
-            view_reviews: false,
-            click_view_reviews: null,
-            click_load_more: [],
-            condition: null, // 将从URL参数获取
-            page_load_time: new Date().toISOString() // 页面加载时间
+            
+            // 实验条件
+            condition: null,        // 将从URL参数获取
+            
+            // 时间戳记录
+            link_click_time: null,        // 点击链接进入页面的时间戳（从URL参数获取或记录）
+            page_load_time: null,          // 页面开始加载的时间戳
+            page_load_complete_time: null,  // 页面加载完成的时间戳
+            dom_content_loaded_time: null,  // DOM内容加载完成的时间戳
+            
+            // 交互行为记录
+            view_reviews: false,           // 是否点击了"查看原始评论"
+            click_view_reviews: null,       // 点击"查看原始评论"的时间戳
+            reviews_expanded_time: null,    // 评论展开完成的时间戳
+            
+            // 加载更多行为记录
+            click_load_more: [],           // 每次点击"加载更多评论"的记录数组
+            total_load_more_clicks: 0,      // 总共点击"加载更多"的次数
+            
+            // 页面停留时间
+            page_leave_time: null,         // 离开页面的时间戳（如果可检测）
+            
+            // 滚动行为（可选）
+            scroll_events: [],              // 滚动事件记录（可选，如果启用）
+            
+            // 其他行为
+            return_click_time: null         // 点击"完成浏览，返回问卷"的时间戳
         };
 
         // 评论数据池
@@ -339,6 +362,9 @@
 
         // 初始化：获取URL参数并保存问卷ID等信息
         function initExperimentData() {
+            // 记录页面开始加载时间
+            experimentData.page_load_time = new Date().toISOString();
+            
             // 获取问卷ID（支持多种参数名）
             experimentData.survey_id = getUrlParameter('survey_id') || 
                                       getUrlParameter('surveyId') || 
@@ -360,6 +386,15 @@
             
             // 获取实验条件
             experimentData.condition = getUrlParameter('condition') || 'rating';
+            
+            // 记录点击链接的时间（如果URL中有传递）
+            const linkClickTime = getUrlParameter('link_click_time');
+            if (linkClickTime) {
+                experimentData.link_click_time = linkClickTime;
+            } else {
+                // 如果没有传递，记录当前时间作为点击时间
+                experimentData.link_click_time = experimentData.page_load_time;
+            }
         }
 
         // 初始化评论摘要（根据实验条件）
@@ -437,6 +472,11 @@
                 currentReviewIndex = renderReviews(0, reviewsPerLoad);
                 loadCount = 1;
                 
+                // 记录评论展开完成时间（使用setTimeout确保DOM更新完成）
+                setTimeout(function() {
+                    experimentData.reviews_expanded_time = new Date().toISOString();
+                }, 100);
+                
                 // 隐藏查看按钮
                 this.style.display = 'none';
             }
@@ -448,11 +488,22 @@
                 const timestamp = new Date().toISOString();
                 experimentData.click_load_more.push({
                     count: loadCount + 1,
-                    timestamp: timestamp
+                    timestamp: timestamp,
+                    before_scroll_position: window.scrollY || window.pageYOffset
                 });
                 
                 currentReviewIndex = renderReviews(currentReviewIndex, reviewsPerLoad);
                 loadCount++;
+                experimentData.total_load_more_clicks = loadCount;
+                
+                // 记录加载完成后的滚动位置
+                setTimeout(function() {
+                    const lastRecord = experimentData.click_load_more[experimentData.click_load_more.length - 1];
+                    if (lastRecord) {
+                        lastRecord.after_scroll_position = window.scrollY || window.pageYOffset;
+                        lastRecord.load_complete_time = new Date().toISOString();
+                    }
+                }, 100);
                 
                 if (loadCount >= maxLoads) {
                     this.disabled = true;
@@ -493,10 +544,18 @@
 
         // 返回问卷按钮
         document.getElementById('returnBtn').addEventListener('click', function() {
+            // 记录点击返回按钮的时间
+            experimentData.return_click_time = new Date().toISOString();
+            
+            // 计算总停留时间（从页面加载到点击返回）
+            const totalTime = new Date(experimentData.return_click_time) - new Date(experimentData.page_load_time);
+            
             // 保存实验数据到localStorage（或发送到服务器）
             const finalData = {
                 ...experimentData,
-                return_timestamp: new Date().toISOString()
+                return_timestamp: experimentData.return_click_time,
+                total_stay_time_ms: totalTime,  // 总停留时间（毫秒）
+                total_stay_time_seconds: Math.round(totalTime / 1000)  // 总停留时间（秒）
             };
             
             localStorage.setItem('experimentData', JSON.stringify(finalData));
@@ -518,10 +577,22 @@
             }
         });
 
-        // 页面加载时初始化
+        // 页面加载完成事件
+        window.addEventListener('load', function() {
+            experimentData.page_load_complete_time = new Date().toISOString();
+        });
+        
+        // DOM内容加载完成事件
         window.addEventListener('DOMContentLoaded', function() {
+            experimentData.dom_content_loaded_time = new Date().toISOString();
             initExperimentData();  // 先初始化实验数据（获取问卷ID等）
             initSummary();         // 再初始化评论摘要
+        });
+        
+        // 页面离开前保存数据（可选）
+        window.addEventListener('beforeunload', function() {
+            experimentData.page_leave_time = new Date().toISOString();
+            // 可以在这里再次保存数据
         });
     </script>
 </body>
