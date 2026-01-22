@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品浏览实验</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 商品信息区 */
+        .product-section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: flex;
+            gap: 30px;
+        }
+
+        .product-image {
+            width: 300px;
+            height: 300px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            flex-shrink: 0;
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-name {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .product-details {
+            list-style: none;
+        }
+
+        .product-details li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .product-details li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #666;
+        }
+
+        /* 评论摘要区 */
+        .summary-section {
+            background: #f0f0f0;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .summary-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .rating-summary {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stars {
+            color: #ffa500;
+            font-size: 18px;
+        }
+
+        .rating-count {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .aigrs-text {
+            color: #333;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        /* 操作按钮区 */
+        .action-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #5a6268;
+        }
+
+        .btn-primary:active {
+            background: #545b62;
+        }
+
+        /* 原始评论区 */
+        .reviews-section {
+            display: none;
+            background: white;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .reviews-section.active {
+            display: block;
+        }
+
+        .review-item {
+            padding: 20px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .review-item:last-child {
+            border-bottom: none;
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .review-stars {
+            color: #ffa500;
+            font-size: 14px;
+        }
+
+        .review-title {
+            font-weight: 500;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .review-content {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 8px;
+        }
+
+        .load-more-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn-load-more {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-load-more:hover {
+            background: #5a6268;
+        }
+
+        .btn-load-more:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* 返回问卷按钮 */
+        .return-section {
+            text-align: center;
+            margin-top: 40px;
+            padding-bottom: 40px;
+        }
+
+        .btn-return {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-return:hover {
+            background: #5a6268;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- ① 商品信息区 -->
+    <section class="product-section">
+        <div class="product-image">商品图片</div>
+        <div class="product-info">
+            <h1 class="product-name">无线蓝牙耳机 Pro</h1>
+            <ul class="product-details">
+                <li>价格区间：299-399元</li>
+                <li>续航时间：8-10小时</li>
+                <li>蓝牙版本：5.2</li>
+                <li>降噪功能：主动降噪</li>
+                <li>舒适度：入耳式设计</li>
+                <li>平均评分：4.3 / 5</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- ② 评分 & 评论摘要区 -->
+    <section class="summary-section" id="summarySection">
+        <div class="summary-title">用户评论摘要</div>
+        <div id="summaryContent">
+            <!-- 这里会根据实验条件动态显示内容 -->
+        </div>
+    </section>
+
+    <!-- ③ 操作按钮区 -->
+    <section class="action-section">
+        <button class="btn-primary" id="viewReviewsBtn">查看原始评论</button>
+    </section>
+
+    <!-- ④ 原始评论区 -->
+    <section class="reviews-section" id="reviewsSection">
+        <div id="reviewsContainer"></div>
+        <div class="load-more-section">
+            <button class="btn-load-more" id="loadMoreBtn">加载更多评论</button>
+        </div>
+    </section>
+
+    <!-- ⑤ 返回问卷按钮 -->
+    <section class="return-section">
+        <button class="btn-return" id="returnBtn">完成浏览，返回问卷</button>
+    </section>
+
+    <script>
+        // 实验数据存储
+        const experimentData = {
+            view_reviews: false,
+            click_view_reviews: null,
+            click_load_more: [],
+            condition: null, // 将从URL参数获取
+            page_load_time: new Date().toISOString() // 页面加载时间
+        };
+
+        // 评论数据池
+        const allReviews = [
+            { stars: 5, title: "音质很棒", content: "音质清晰，低音效果不错。续航能力也很强，一天使用完全没问题。佩戴舒适，长时间使用不会感到不适。" },
+            { stars: 4, title: "性价比高", content: "价格合理，功能齐全。降噪效果一般，但在安静环境下使用足够。续航表现中规中矩，大约8小时左右。" },
+            { stars: 5, title: "非常满意", content: "蓝牙连接稳定，没有断连问题。音质超出预期，特别是人声部分。舒适度很好，运动时也不会掉落。" },
+            { stars: 3, title: "一般般", content: "续航没有宣传的那么长，实际使用大概6-7小时。音质还可以，但降噪功能效果不明显。佩戴还算舒适。" },
+            { stars: 4, title: "值得购买", content: "整体表现不错，续航能力符合预期。音质清晰，低音效果可以。功能齐全，操作简单。舒适度一般，长时间佩戴会有点累。" },
+            { stars: 5, title: "超出预期", content: "音质非常好，特别是高音部分。续航能力很强，连续使用10小时没问题。降噪效果明显，在嘈杂环境中也能清晰听音乐。" },
+            { stars: 2, title: "不太满意", content: "续航时间太短，只有5-6小时。音质一般，低音不够。佩戴不够舒适，耳朵会疼。降噪功能基本没用。" },
+            { stars: 4, title: "还不错", content: "价格合适，音质对得起这个价位。续航表现正常，大约8小时。功能齐全，蓝牙连接稳定。舒适度还可以。" },
+            { stars: 5, title: "推荐购买", content: "音质出色，特别是人声和乐器分离度很好。续航能力很强，一天使用完全够用。降噪效果不错，能有效减少环境噪音。" },
+            { stars: 3, title: "中规中矩", content: "音质还可以，但不算突出。续航时间一般，大约7小时。降噪功能效果有限。佩戴舒适度中等，长时间使用会有点不适。" },
+            { stars: 4, title: "性价比不错", content: "在这个价位算是很不错的了。音质清晰，续航能力符合预期。功能齐全，操作方便。舒适度还可以，但不如高端产品。" },
+            { stars: 5, title: "非常推荐", content: "音质很棒，低音有力，高音清晰。续航能力超强，连续使用12小时没问题。降噪效果明显，在飞机上也能安静听音乐。" },
+            { stars: 4, title: "满意", content: "整体表现不错，音质清晰，续航能力正常。降噪功能有效，但不如专业降噪耳机。佩戴舒适，适合长时间使用。" },
+            { stars: 3, title: "一般", content: "音质还可以，但低音不够。续航时间大约7小时，不算太长。降噪效果一般。舒适度中等，长时间佩戴会累。" },
+            { stars: 5, title: "物超所值", content: "音质非常好，特别是人声部分很清晰。续航能力很强，一天使用完全没问题。降噪效果不错，能有效减少噪音干扰。" },
+            { stars: 4, title: "值得一试", content: "音质清晰，低音效果可以。续航表现正常，大约8-9小时。功能齐全，蓝牙连接稳定。舒适度还可以，但不如入耳式舒适。" },
+            { stars: 2, title: "不推荐", content: "续航时间太短，只有5小时左右。音质一般，低音不够。降噪功能基本没用。佩戴不够舒适，耳朵会疼。" },
+            { stars: 4, title: "还可以", content: "价格合理，音质对得起这个价位。续航能力正常，大约8小时。功能齐全，操作简单。舒适度一般。" },
+            { stars: 5, title: "很棒", content: "音质出色，特别是高音和低音分离度很好。续航能力很强，连续使用10小时没问题。降噪效果明显，能有效减少环境噪音。" },
+            { stars: 3, title: "普通", content: "音质还可以，但不算突出。续航时间一般，大约7小时。降噪功能效果有限。佩戴舒适度中等。" },
+            { stars: 4, title: "不错", content: "整体表现不错，音质清晰，续航能力符合预期。功能齐全，蓝牙连接稳定。舒适度还可以，适合日常使用。" },
+            { stars: 5, title: "非常满意", content: "音质很棒，低音有力，高音清晰。续航能力超强，连续使用12小时没问题。降噪效果明显，在嘈杂环境中也能清晰听音乐。" },
+            { stars: 4, title: "推荐", content: "音质清晰，低音效果可以。续航表现正常，大约8-9小时。功能齐全，操作方便。舒适度还可以。" },
+            { stars: 3, title: "一般般", content: "音质还可以，但低音不够。续航时间大约7小时，不算太长。降噪效果一般。舒适度中等。" },
+            { stars: 5, title: "物超所值", content: "音质非常好，特别是人声部分很清晰。续航能力很强，一天使用完全没问题。降噪效果不错，能有效减少噪音干扰。" },
+            { stars: 4, title: "值得购买", content: "整体表现不错，音质清晰，续航能力正常。降噪功能有效，但不如专业降噪耳机。佩戴舒适，适合长时间使用。" },
+            { stars: 2, title: "不太满意", content: "续航时间太短，只有5-6小时。音质一般，低音不够。降噪功能基本没用。佩戴不够舒适。" },
+            { stars: 4, title: "还可以", content: "价格合理，音质对得起这个价位。续航能力正常，大约8小时。功能齐全，操作简单。舒适度一般。" },
+            { stars: 5, title: "很棒", content: "音质出色，特别是高音和低音分离度很好。续航能力很强，连续使用10小时没问题。降噪效果明显。" },
+            { stars: 3, title: "中规中矩", content: "音质还可以，但不算突出。续航时间一般，大约7小时。降噪功能效果有限。佩戴舒适度中等，长时间使用会有点不适。" },
+            { stars: 4, title: "不错", content: "整体表现不错，音质清晰，续航能力符合预期。功能齐全，蓝牙连接稳定。舒适度还可以，适合日常使用。" },
+            { stars: 5, title: "非常推荐", content: "音质很棒，低音有力，高音清晰。续航能力超强，连续使用12小时没问题。降噪效果明显，在飞机上也能安静听音乐。" },
+            { stars: 4, title: "满意", content: "音质清晰，低音效果可以。续航表现正常，大约8-9小时。功能齐全，操作方便。舒适度还可以。" },
+            { stars: 3, title: "一般", content: "音质还可以，但低音不够。续航时间大约7小时，不算太长。降噪效果一般。舒适度中等，长时间佩戴会累。" },
+            { stars: 5, title: "物超所值", content: "音质非常好，特别是人声部分很清晰。续航能力很强，一天使用完全没问题。降噪效果不错，能有效减少噪音干扰。" },
+            { stars: 4, title: "值得一试", content: "音质清晰，低音效果可以。续航表现正常，大约8-9小时。功能齐全，蓝牙连接稳定。舒适度还可以，但不如入耳式舒适。" },
+            { stars: 2, title: "不推荐", content: "续航时间太短，只有5小时左右。音质一般，低音不够。降噪功能基本没用。佩戴不够舒适，耳朵会疼。" },
+            { stars: 4, title: "还可以", content: "价格合理，音质对得起这个价位。续航能力正常，大约8小时。功能齐全，操作简单。舒适度一般。" },
+            { stars: 5, title: "很棒", content: "音质出色，特别是高音和低音分离度很好。续航能力很强，连续使用10小时没问题。降噪效果明显，能有效减少环境噪音。" },
+            { stars: 3, title: "普通", content: "音质还可以，但不算突出。续航时间一般，大约7小时。降噪功能效果有限。佩戴舒适度中等。" }
+        ];
+
+        // 从URL获取实验条件
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // 初始化评论摘要（根据实验条件）
+        function initSummary() {
+            const condition = getUrlParameter('condition') || 'rating'; // 默认rating
+            experimentData.condition = condition;
+            const summaryContent = document.getElementById('summaryContent');
+
+            if (condition === 'rating') {
+                // 只显示星级和数量
+                summaryContent.innerHTML = `
+                    <div class="rating-summary">
+                        <div class="stars">★★★★☆</div>
+                        <div class="rating-count">共 156 条评论</div>
+                    </div>
+                `;
+            } else if (condition === 'aigrs_neutral') {
+                // AIGRS 中立版本
+                summaryContent.innerHTML = `
+                    <div class="aigrs-text">
+                        用户评论显示，该产品在音质、续航和舒适度方面表现稳定。部分用户对降噪功能有不同看法，整体评价较为均衡。
+                    </div>
+                `;
+            } else if (condition === 'aigrs_positive') {
+                // AIGRS 正向版本
+                summaryContent.innerHTML = `
+                    <div class="aigrs-text">
+                        用户评论显示，该产品在音质、续航和舒适度方面获得较多好评。大部分用户对产品整体表现表示满意，认为性价比较高。
+                    </div>
+                `;
+            }
+        }
+
+        // 渲染评论
+        function renderReviews(startIndex, count) {
+            const container = document.getElementById('reviewsContainer');
+            const endIndex = Math.min(startIndex + count, allReviews.length);
+            
+            for (let i = startIndex; i < endIndex; i++) {
+                const review = allReviews[i];
+                const reviewElement = document.createElement('div');
+                reviewElement.className = 'review-item';
+                
+                const stars = '★'.repeat(review.stars) + '☆'.repeat(5 - review.stars);
+                
+                reviewElement.innerHTML = `
+                    <div class="review-header">
+                        <div class="review-stars">${stars}</div>
+                        <div class="review-title">${review.title}</div>
+                    </div>
+                    <div class="review-content">${review.content}</div>
+                `;
+                
+                container.appendChild(reviewElement);
+            }
+            
+            return endIndex;
+        }
+
+        // 当前显示的评论数量
+        let currentReviewIndex = 0;
+        const reviewsPerLoad = 9;
+        const maxLoads = 5;
+        let loadCount = 0;
+
+        // 查看原始评论按钮
+        document.getElementById('viewReviewsBtn').addEventListener('click', function() {
+            if (!experimentData.view_reviews) {
+                experimentData.view_reviews = true;
+                experimentData.click_view_reviews = new Date().toISOString();
+                
+                // 显示评论区
+                document.getElementById('reviewsSection').classList.add('active');
+                
+                // 首次加载评论
+                currentReviewIndex = renderReviews(0, reviewsPerLoad);
+                loadCount = 1;
+                
+                // 隐藏查看按钮
+                this.style.display = 'none';
+            }
+        });
+
+        // 加载更多评论按钮
+        document.getElementById('loadMoreBtn').addEventListener('click', function() {
+            if (loadCount < maxLoads) {
+                const timestamp = new Date().toISOString();
+                experimentData.click_load_more.push({
+                    count: loadCount + 1,
+                    timestamp: timestamp
+                });
+                
+                currentReviewIndex = renderReviews(currentReviewIndex, reviewsPerLoad);
+                loadCount++;
+                
+                if (loadCount >= maxLoads) {
+                    this.disabled = true;
+                    this.textContent = '已加载全部评论';
+                }
+            }
+        });
+
+        // 检测是否在iframe中
+        function isInIframe() {
+            try {
+                return window.self !== window.top;
+            } catch (e) {
+                return true;
+            }
+        }
+
+        // 向父窗口发送数据（用于Credamo平台）
+        function sendDataToParent(data) {
+            if (isInIframe() && window.parent) {
+                // 通过postMessage发送数据给Credamo
+                window.parent.postMessage({
+                    type: 'experiment_complete',
+                    data: data
+                }, '*');
+                
+                // 如果Credamo支持URL跳转，也可以通过URL参数传递
+                const returnUrl = getUrlParameter('return_url');
+                if (returnUrl) {
+                    // 将数据编码到URL参数中
+                    const params = new URLSearchParams();
+                    params.set('experiment_data', JSON.stringify(data));
+                    const separator = returnUrl.includes('?') ? '&' : '?';
+                    window.location.href = returnUrl + separator + params.toString();
+                }
+            }
+        }
+
+        // 返回问卷按钮
+        document.getElementById('returnBtn').addEventListener('click', function() {
+            // 保存实验数据到localStorage（或发送到服务器）
+            const finalData = {
+                ...experimentData,
+                return_timestamp: new Date().toISOString()
+            };
+            
+            localStorage.setItem('experimentData', JSON.stringify(finalData));
+            
+            // 如果在iframe中（Credamo嵌入），发送数据给父窗口
+            if (isInIframe()) {
+                sendDataToParent(finalData);
+            } else {
+                // 如果有返回URL，则跳转；否则显示数据
+                const returnUrl = getUrlParameter('return_url');
+                if (returnUrl) {
+                    const params = new URLSearchParams();
+                    params.set('experiment_data', JSON.stringify(finalData));
+                    const separator = returnUrl.includes('?') ? '&' : '?';
+                    window.location.href = returnUrl + separator + params.toString();
+                } else {
+                    alert('实验数据已保存。\n\n' + JSON.stringify(finalData, null, 2));
+                }
+            }
+        });
+
+        // 页面加载时初始化
+        window.addEventListener('DOMContentLoaded', function() {
+            initSummary();
+        });
+    </script>
+</body>
+</html>
