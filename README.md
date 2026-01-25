@@ -75,7 +75,7 @@ https://你的用户名.github.io/product-experiment/index.html?survey_id={{surv
 ## 自定义说明
 
 ### 修改商品信息
-编辑 `index.html` 中的商品信息区（`.product-section`）部分（约236-249行）。
+编辑 `index.html` 中的商品信息区（`.product-section`）部分（约379-410行）。
 
 ### 修改评论内容
 编辑 `allReviews` 数组（约314-355行），包含40条预设评论，可根据需要调整。
