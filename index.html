@@ -707,10 +707,27 @@
             }
         }
 
+        // 检查URL是否有效（不是模板变量）
+        function isValidUrl(url) {
+            if (!url || typeof url !== 'string') return false;
+            const trimmed = url.trim();
+            // 检查是否是空字符串
+            if (trimmed === '') return false;
+            // 检查是否包含模板变量（如{{}}）
+            if (trimmed.includes('{{') && trimmed.includes('}}')) return false;
+            // 检查是否是有效的URL格式
+            try {
+                const urlObj = new URL(trimmed);
+                return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+            } catch (e) {
+                return false;
+            }
+        }
+
         // 向父窗口发送数据（用于Credamo平台）
         function sendDataToParent(data) {
             if (isInIframe() && window.parent) {
-                // 通过postMessage发送数据给Credamo
+                // 通过postMessage发送数据给Credamo（始终发送）
                 window.parent.postMessage({
                     type: 'experiment_complete',
                     data: data
@@ -718,8 +735,8 @@
                 
                 // 如果Credamo支持URL跳转，也可以通过URL参数传递
                 const returnUrl = getUrlParameter('return_url');
-                if (returnUrl && returnUrl.trim() !== '' && returnUrl !== '{{next_page_url}}') {
-                    // 检查URL是否有效（不是Credamo的模板变量）
+                if (isValidUrl(returnUrl)) {
+                    // URL有效，尝试跳转
                     try {
                         // 将数据编码到URL参数中
                         const params = new URLSearchParams();
@@ -736,8 +753,12 @@
                         }
                     } catch (e) {
                         console.error('跳转失败：', e);
-                        // 如果跳转失败，只发送postMessage
+                        console.log('数据已通过postMessage发送，请确保Credamo页面已配置接收postMessage');
                     }
+                } else {
+                    // URL无效或未提供，只使用postMessage
+                    console.log('return_url参数无效或未提供，数据已通过postMessage发送');
+                    console.log('请在Credamo的下一个页面中通过postMessage接收数据');
                 }
             }
         }
@@ -766,8 +787,8 @@
             } else {
                 // 如果有返回URL，则跳转；否则显示数据
                 const returnUrl = getUrlParameter('return_url');
-                if (returnUrl && returnUrl.trim() !== '' && returnUrl !== '{{next_page_url}}') {
-                    // 检查URL是否有效（不是Credamo的模板变量）
+                if (isValidUrl(returnUrl)) {
+                    // URL有效，尝试跳转
                     try {
                         const params = new URLSearchParams();
                         params.set('experiment_data', JSON.stringify(finalData));

@@ -36,7 +36,7 @@ https://你的用户名.github.io/product-experiment/index.html?survey_id={{surv
 |--------|------|------|------|
 | `survey_id` | ✅ 是 | 问卷ID（用于关联数据） | `survey_id={{survey_id}}` |
 | `condition` | ✅ 是 | 实验条件 | `condition=rating` / `condition=aigrs_neutral` / `condition=aigrs_positive` |
-| `return_url` | ⚠️ 建议 | 返回问卷的链接（用于数据回传） | `return_url={{next_page_url}}` |
+| `return_url` | ⚠️ 建议 | 返回问卷的链接（用于数据回传） | `return_url={{next_page_url}}` 或具体URL |
 | `user_id` | ❌ 可选 | 用户ID（如果需要） | `user_id={{user_id}}` |
 | `respondent_id` | ❌ 可选 | 受访者ID（如果需要） | `respondent_id={{respondent_id}}` |
 
