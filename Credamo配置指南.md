@@ -241,6 +241,41 @@ https://你的用户名.github.io/product-experiment/index.html?survey_id=TEST12
 3. **数据验证**：在接收数据时，添加错误处理和数据验证
 4. **测试**：在正式发布前，充分测试数据传递和保存功能
 5. **跨域问题**：如果部署在不同域名，确保Credamo允许iframe嵌入
+6. **return_url参数**：确保 `{{next_page_url}}` 在Credamo中正确解析为有效的URL，否则会导致404错误
+
+## ❗ 常见问题排查
+
+### 问题1：点击"完成浏览，返回问卷"后出现404错误
+
+**可能原因：**
+- `{{next_page_url}}` 变量在Credamo中没有正确解析
+- return_url参数传递了无效的URL或模板变量字符串
+
+**解决方案：**
+
+1. **检查URL参数是否正确解析**
+   - 在浏览器开发者工具中检查iframe的src属性
+   - 确认 `{{next_page_url}}` 是否被替换为实际URL
+   - 如果看到 `return_url={{next_page_url}}` 这样的原始模板，说明变量未解析
+
+2. **使用Credamo的正确变量**
+   - 确认Credamo平台支持 `{{next_page_url}}` 变量
+   - 如果不支持，尝试使用其他变量，如 `{{next_url}}` 或 `{{page_url}}`
+   - 或者手动设置返回URL
+
+3. **测试方法**
+   - 在iframe的src中直接使用完整URL测试：
+     ```html
+     <iframe 
+         src="https://你的用户名.github.io/product-experiment/index.html?survey_id=123&condition=rating&return_url=https://credamo.com/your-survey/next" 
+         ...>
+     ```
+   - 如果直接URL可以工作，说明是变量解析问题
+
+4. **替代方案：使用postMessage**
+   - 如果URL跳转有问题，可以只使用postMessage传递数据
+   - 在Credamo的下一个页面中通过JavaScript接收数据
+   - 这样不需要return_url参数
 
 ## 📞 需要帮助？
 

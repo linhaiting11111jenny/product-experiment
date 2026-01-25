@@ -82,7 +82,7 @@
             font-size: 16px;
             font-weight: 500;
             margin-bottom: 15px;
-            color: #333;
+            color: #ffa500;
         }
 
         .rating-summary {
@@ -101,10 +101,113 @@
             font-size: 14px;
         }
 
+        /* 星级分布图样式（rating条件） */
+        .rating-distribution {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .rating-overview {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .rating-stars-display {
+            color: #ffa500;
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .rating-average {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .rating-total {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .rating-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .rating-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .rating-bar-label {
+            width: 35px;
+            color: #666;
+            text-align: left;
+            flex-shrink: 0;
+        }
+
+        .rating-bar-container {
+            flex: 1;
+            height: 16px;
+            background-color: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .rating-bar-fill {
+            height: 100%;
+            background-color: #ffa500;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .rating-bar-percentage {
+            width: 40px;
+            color: #666;
+            text-align: right;
+            flex-shrink: 0;
+            font-size: 13px;
+        }
+
         .aigrs-text {
             color: #333;
             font-size: 14px;
             line-height: 1.8;
+        }
+
+        /* 新增样式示例：支持更多实验条件 */
+        .aigrs-negative-text {
+            color: #666;
+            /* 可以添加更多样式，如不同的颜色、字体等 */
+        }
+
+        .detailed-rating {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .rating-breakdown {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .breakdown-item {
+            font-size: 13px;
+            color: #666;
+            padding: 5px 10px;
+            background: #f9f9f9;
+            border-radius: 3px;
         }
 
         /* 操作按钮区 */
@@ -143,6 +246,13 @@
 
         .reviews-section.active {
             display: block;
+        }
+
+        .reviews-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: #ffa500;
         }
 
         .review-item {
@@ -263,6 +373,7 @@
 
     <!-- ④ 原始评论区 -->
     <section class="reviews-section" id="reviewsSection">
+        <div class="reviews-title">用户评论</div>
         <div id="reviewsContainer"></div>
         <div class="load-more-section">
             <button class="btn-load-more" id="loadMoreBtn">加载更多评论</button>
@@ -398,30 +509,105 @@
         }
 
         // 初始化评论摘要（根据实验条件）
+        // 修改说明：
+        // 1. 修改现有条件：直接修改对应条件内的 innerHTML 内容
+        // 2. 添加新条件：在 else if 后添加新的条件判断
+        // 3. 添加新样式：在 <style> 标签中添加对应的 CSS 类
         function initSummary() {
             const condition = experimentData.condition;
             const summaryContent = document.getElementById('summaryContent');
 
             if (condition === 'rating') {
-                // 只显示星级和数量
+                // 条件1：星级分布图（类似Amazon风格）
+                // 数据：可以根据实际需要修改百分比
+                const ratingData = {
+                    average: 4.3,        // 平均评分
+                    total: 156,          // 总评论数
+                    distribution: [      // 各星级占比（从5星到1星）
+                        { stars: 5, percentage: 65 },  // 5星占65%
+                        { stars: 4, percentage: 20 },  // 4星占20%
+                        { stars: 3, percentage: 8 },   // 3星占8%
+                        { stars: 2, percentage: 4 },   // 2星占4%
+                        { stars: 1, percentage: 3 }    // 1星占3%
+                    ]
+                };
+                
+                // 生成星级显示（4.3分显示为4个完整星 + 1个空星）
+                const fullStars = Math.floor(ratingData.average);
+                const emptyStars = 5 - fullStars;
+                let starsDisplay = '★'.repeat(fullStars) + '☆'.repeat(emptyStars);
+                
+                // 生成分布条形图HTML
+                let distributionHTML = '';
+                ratingData.distribution.forEach(item => {
+                    distributionHTML += `
+                        <div class="rating-bar-row">
+                            <div class="rating-bar-label">${item.stars}星</div>
+                            <div class="rating-bar-container">
+                                <div class="rating-bar-fill" style="width: ${item.percentage}%"></div>
+                            </div>
+                            <div class="rating-bar-percentage">${item.percentage}%</div>
+                        </div>
+                    `;
+                });
+                
                 summaryContent.innerHTML = `
-                    <div class="rating-summary">
-                        <div class="stars">★★★★☆</div>
-                        <div class="rating-count">共 156 条评论</div>
+                    <div class="rating-distribution">
+                        <div class="rating-overview">
+                            <div class="rating-stars-display">${starsDisplay}</div>
+                            <div class="rating-average">${ratingData.average} out of 5</div>
+                            <div class="rating-total">${ratingData.total} 条评论</div>
+                        </div>
+                        <div class="rating-breakdown">
+                            ${distributionHTML}
+                        </div>
                     </div>
                 `;
             } else if (condition === 'aigrs_neutral') {
-                // AIGRS 中立版本
+                // 条件2：AIGRS 中立版本
+                // 修改示例：可以修改文本内容、添加更多段落等
                 summaryContent.innerHTML = `
                     <div class="aigrs-text">
                         用户评论显示，该产品在音质、续航和舒适度方面表现稳定。部分用户对降噪功能有不同看法，整体评价较为均衡。
                     </div>
                 `;
             } else if (condition === 'aigrs_positive') {
-                // AIGRS 正向版本
+                // 条件3：AIGRS 正向版本
+                // 修改示例：可以修改文本内容，使其更积极正面
                 summaryContent.innerHTML = `
                     <div class="aigrs-text">
                         用户评论显示，该产品在音质、续航和舒适度方面获得较多好评。大部分用户对产品整体表现表示满意，认为性价比较高。
+                    </div>
+                `;
+            } else if (condition === 'aigrs_negative') {
+                // 示例：添加新的实验条件（AIGRS 负向版本）
+                // 注意：需要在CSS中添加 .aigrs-negative-text 样式类
+                summaryContent.innerHTML = `
+                    <div class="aigrs-text aigrs-negative-text">
+                        用户评论显示，该产品在某些方面存在不足。部分用户反馈续航时间未达预期，降噪效果有待提升。
+                    </div>
+                `;
+            } else if (condition === 'detailed_rating') {
+                // 示例：添加详细评分条件（星级 + 各维度评分）
+                summaryContent.innerHTML = `
+                    <div class="detailed-rating">
+                        <div class="rating-summary">
+                            <div class="stars">★★★★☆</div>
+                            <div class="rating-count">共 156 条评论</div>
+                        </div>
+                        <div class="rating-breakdown">
+                            <div class="breakdown-item">音质：4.5分</div>
+                            <div class="breakdown-item">续航：4.2分</div>
+                            <div class="breakdown-item">舒适度：4.3分</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // 默认情况：如果条件不匹配，显示默认内容
+                summaryContent.innerHTML = `
+                    <div class="rating-summary">
+                        <div class="stars">★★★★☆</div>
+                        <div class="rating-count">共 156 条评论</div>
                     </div>
                 `;
             }
@@ -532,12 +718,26 @@
                 
                 // 如果Credamo支持URL跳转，也可以通过URL参数传递
                 const returnUrl = getUrlParameter('return_url');
-                if (returnUrl) {
-                    // 将数据编码到URL参数中
-                    const params = new URLSearchParams();
-                    params.set('experiment_data', JSON.stringify(data));
-                    const separator = returnUrl.includes('?') ? '&' : '?';
-                    window.location.href = returnUrl + separator + params.toString();
+                if (returnUrl && returnUrl.trim() !== '' && returnUrl !== '{{next_page_url}}') {
+                    // 检查URL是否有效（不是Credamo的模板变量）
+                    try {
+                        // 将数据编码到URL参数中
+                        const params = new URLSearchParams();
+                        params.set('experiment_data', JSON.stringify(data));
+                        const separator = returnUrl.includes('?') ? '&' : '?';
+                        const fullUrl = returnUrl + separator + params.toString();
+                        
+                        // 在iframe中，需要跳转整个页面，而不是只跳转iframe
+                        // 使用window.top来跳转整个窗口
+                        if (window.top && window.top !== window.self) {
+                            window.top.location.href = fullUrl;
+                        } else {
+                            window.location.href = fullUrl;
+                        }
+                    } catch (e) {
+                        console.error('跳转失败：', e);
+                        // 如果跳转失败，只发送postMessage
+                    }
                 }
             }
         }
@@ -566,11 +766,17 @@
             } else {
                 // 如果有返回URL，则跳转；否则显示数据
                 const returnUrl = getUrlParameter('return_url');
-                if (returnUrl) {
-                    const params = new URLSearchParams();
-                    params.set('experiment_data', JSON.stringify(finalData));
-                    const separator = returnUrl.includes('?') ? '&' : '?';
-                    window.location.href = returnUrl + separator + params.toString();
+                if (returnUrl && returnUrl.trim() !== '' && returnUrl !== '{{next_page_url}}') {
+                    // 检查URL是否有效（不是Credamo的模板变量）
+                    try {
+                        const params = new URLSearchParams();
+                        params.set('experiment_data', JSON.stringify(finalData));
+                        const separator = returnUrl.includes('?') ? '&' : '?';
+                        window.location.href = returnUrl + separator + params.toString();
+                    } catch (e) {
+                        console.error('跳转失败：', e);
+                        alert('实验数据已保存，但跳转失败。\n\n' + JSON.stringify(finalData, null, 2));
+                    }
                 } else {
                     alert('实验数据已保存。\n\n' + JSON.stringify(finalData, null, 2));
                 }
