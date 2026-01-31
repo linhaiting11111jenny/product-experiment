@@ -246,31 +246,37 @@
 		    const urlParams = new URLSearchParams(window.location.search);
 		    let returnUrl = urlParams.get('return_url');
 		    
+		    // 构造数据字符串
 		    const dataParams = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
 		
 		    if (returnUrl && returnUrl.includes('http')) {
 		        returnUrl = decodeURIComponent(returnUrl);
 		        
 		        let finalUrl;
-		        // 如果链接包含 #/s/，这是 Credamo 的路由格式
-		        if (returnUrl.includes('#')) {
-		            const parts = returnUrl.split('#');
-		            // 关键：把参数塞在问卷 ID 之后，或者 # 之前
-		            // 尝试最通用的做法：
-		            finalUrl = parts[0] + (parts[0].includes('?') ? '&' : '?') + dataParams + '#' + parts[1];
+		        // 关键：针对 Credamo 的空白页问题进行修复
+		        if (returnUrl.includes('#/s/')) {
+		            // 情况 A：地址包含具体的问卷路径 (如 answer.html#/s/bIfEv2)
+		            // 我们把参数强行插在最后，确保路由不丢失
+		            finalUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
+		        } else if (returnUrl.includes('#/')) {
+		            // 情况 B：地址只有根路由
+		            finalUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
 		        } else {
+		            // 情况 C：普通地址，直接拼接
 		            finalUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
 		        }
-		        
+		
+		        console.log("最终回传地址:", finalUrl);
 		        window.location.href = finalUrl;
 		    } else {
-		        alert("采集成功！停留：" + duration + "s。请点浏览器返回键回到问卷。");
+		        alert("采集完毕，请手动点击浏览器返回键。");
 		        window.history.back();
 		    }
 		};
     </script>
 </body>
 </html>
+
 
 
 
