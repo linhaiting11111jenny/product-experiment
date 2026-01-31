@@ -1,1 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品详情 - 实验材料</title>
+    <style>
+        /* 保留你原本的所有 CSS 样式 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        
+        .product-section { background: white; padding: 30px; margin-bottom: 20px; border-radius: 8px; display: flex; gap: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .product-image { flex: 0 0 400px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+        .product-image img { width: 100%; height: auto; display: block; }
+        
+        .product-info { flex: 1; }
+        .product-name { font-size: 26px; font-weight: 600; margin-bottom: 10px; color: #111; }
+        .product-category { color: #666; margin-bottom: 20px; font-size: 14px; }
+        .product-price { font-size: 24px; font-weight: bold; margin-bottom: 25px; color: #e4393c; }
+
+        .product-details-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .product-details-table tr { border-bottom: 1px solid #eee; }
+        .product-details-table td { padding: 12px 0; vertical-align: top; }
+        .product-details-table td:first-child { color: #888; width: 120px; font-weight: 500; }
+
+        .summary-section { background: #fff; padding: 25px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #e0e0e0; }
+        .summary-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #ffa500; border-left: 4px solid #ffa500; padding-left: 10px; }
+
+        /* 评分分布样式 */
+        .rating-distribution { display: flex; flex-direction: column; gap: 12px; }
+        .rating-overview { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
+        .rating-stars-display { color: #ffa500; font-size: 20px; }
+        .rating-average { font-size: 18px; font-weight: bold; }
+        .rating-total { font-size: 14px; color: #666; }
+        .rating-bar-row { display: flex; align-items: center; gap: 10px; }
+        .rating-bar-label { width: 40px; font-size: 13px; color: #666; }
+        .rating-bar-container { flex: 1; height: 12px; background: #eee; border-radius: 6px; overflow: hidden; }
+        .rating-bar-fill { height: 100%; background: #ffa500; }
+        .rating-bar-percentage { width: 40px; font-size: 13px; color: #666; text-align: right; }
+
+        .aigrs-text { font-size: 15px; line-height: 1.8; color: #444; background: #fffaf0; padding: 15px; border-radius: 4px; border: 1px dashed #ffdca8; }
+
+        .action-section { text-align: center; margin: 30px 0; }
+        .btn-primary { background: #6c757d; color: white; border: none; padding: 12px 40px; font-size: 16px; border-radius: 25px; cursor: pointer; transition: 0.3s; }
+        .btn-primary:hover { background: #5a6268; }
+
+        .reviews-section { display: none; background: white; padding: 30px; border-radius: 8px; margin-bottom: 30px; }
+        .reviews-section.active { display: block; }
+        .review-item { padding: 20px 0; border-bottom: 1px solid #eee; }
+        .review-stars { color: #ffa500; margin-bottom: 5px; }
+        .review-title { font-weight: 600; margin-bottom: 8px; }
+        .review-content { font-size: 14px; color: #555; }
+
+        .load-more-section { text-align: center; margin-top: 20px; }
+        .btn-load-more { background: none; border: 1px solid #999; color: #666; padding: 8px 20px; border-radius: 4px; cursor: pointer; }
+
+        .return-section { text-align: center; margin-top: 50px; padding-bottom: 60px; border-top: 1px solid #ddd; padding-top: 30px; }
+        .btn-return { background: #007bff; color: white; border: none; padding: 15px 50px; font-size: 18px; border-radius: 4px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(0,123,255,0.3); }
+        .btn-return:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+
+    <section class="product-section">
+        <div class="product-image">
+            <img src="product.jpg" alt="AceTrack G1">
+        </div>
+        <div class="product-info">
+            <h1 class="product-name">AceTrack G1 智能运动手表</h1>
+            <p class="product-category">分类：数字穿戴 / 2026 实验旗舰款</p>
+            <div class="product-price">零售价：¥499.00</div>
+            <table class="product-details-table">
+                <tr><td>显示屏</td><td>1.43" AMOLED 视网膜屏 (466×466 px)</td></tr>
+                <tr><td>核心传感器</td><td>六轴加速度计、PPG心率传感器、红外血氧监测</td></tr>
+                <tr><td>定位系统</td><td>独立双频五星定位 (GPS, GLONASS, Beidou, Galileo, QZSS)</td></tr>
+                <tr><td>防水等级</td><td>5ATM (支持50米游泳防水)</td></tr>
+                <tr><td>电池续航</td><td>典型模式 14 天 / 重度使用 5 天</td></tr>
+                <tr><td>连接性</td><td>Bluetooth 5.3 / 全功能 NFC</td></tr>
+                <tr><td>运动模式</td><td>支持包括操场跑、高强度间歇训练(HIIT)等 117 种模式</td></tr>
+            </table>
+        </div>
+    </section>
+
+    <section class="summary-section">
+        <div class="summary-title" id="conditionTitle">用户反馈摘要</div>
+        <div id="summaryContent">
+            </div>
+    </section>
+
+    <div class="action-section">
+        <button class="btn-primary" id="viewReviewsBtn">查看用户原始评论</button>
+    </div>
+
+    <section class="reviews-section" id="reviewsSection">
+        <div class="summary-title" style="color:#333; border-left-color:#333;">原始评论列表</div>
+        <div id="reviewsContainer"></div>
+        <div class="load-more-section">
+            <button class="btn-load-more" id="loadMoreBtn">点击加载更多评论</button>
+        </div>
+    </section>
+
+    <div class="return-section">
+        <p style="margin-bottom: 15px; color: #888; font-size: 13px;">阅读完毕请点击下方按钮返回问卷</p>
+        <button class="btn-return" id="returnBtn">完成浏览，返回问卷</button>
+    </div>
+
+    <script>
+        // --- 1. 数据池：完整保留你的 40 条评论 ---
+        const allReviews = [
+            { stars: 5, title: "音质和续航非常惊人", content: "作为运动手表，它的定位非常准，心率监测和我的心率带误差极小。屏幕在阳光下也很清晰。" },
+            { stars: 4, title: "性价比非常高", content: "功能很多，尤其是那117种运动模式。唯一缺点是表盘稍微有点大，女生戴可能感觉略重。" },
+            { stars: 5, title: "外观大气，连接稳定", content: "连接手机APP速度很快，数据同步顺畅。睡眠监测功能挺有用的。" },
+            { stars: 3, title: "中规中矩吧", content: "外观还行，但APP的界面设计我觉得一般。续航确实能到两周左右。" },
+            { stars: 5, title: "强烈推荐给跑友", content: "GPS搜星很快，轨迹基本没有漂移，这个价格能买到这种定位水准很划算。" },
+            { stars: 2, title: "血氧监测偶尔不准", content: "血氧测量时必须手一动不动，否则容易失败，其他功能还行。" },
+            { stars: 5, title: "电池是真的耐用", content: "出差一周没带充电器，回来还有40%的电，非常省心。" },
+            { stars: 4, title: "屏幕显示效果出色", content: "AMOLED屏幕对比度很高，颜色很正，晚上看也不刺眼。" },
+            { stars: 5, title: "防水性能不错", content: "游泳戴了几次，触屏在水下有锁屏模式，数据记录很详尽。" },
+            { stars: 3, title: "表带材质一般", content: "表带稍微有点硬，戴久了有点出汗感，建议自己换个编织表带。" },
+			{ stars: 5, title: "音质和续航非常惊人", content: "作为运动手表，它的定位非常准，心率监测和我的心率带误差极小。屏幕在阳光下也很清晰。" },
+            { stars: 4, title: "性价比非常高", content: "功能很多，尤其是那117种运动模式。唯一缺点是表盘稍微有点大，女生戴可能感觉略重。" },
+            { stars: 5, title: "外观大气，连接稳定", content: "连接手机APP速度很快，数据同步顺畅。睡眠监测功能挺有用的。" },
+            { stars: 3, title: "中规中矩吧", content: "外观还行，但APP的界面设计我觉得一般。续航确实能到两周左右。" },
+            { stars: 5, title: "强烈推荐给跑友", content: "GPS搜星很快，轨迹基本没有漂移，这个价格能买到这种定位水准很划算。" },
+            { stars: 2, title: "血氧监测偶尔不准", content: "血氧测量时必须手一动不动，否则容易失败，其他功能还行。" },
+            { stars: 5, title: "电池是真的耐用", content: "出差一周没带充电器，回来还有40%的电，非常省心。" },
+            { stars: 4, title: "屏幕显示效果出色", content: "AMOLED屏幕对比度很高，颜色很正，晚上看也不刺眼。" },
+            { stars: 5, title: "防水性能不错", content: "游泳戴了几次，触屏在水下有锁屏模式，数据记录很详尽。" },
+            { stars: 3, title: "表带材质一般", content: "表带稍微有点硬，戴久了有点出汗感，建议自己换个编织表带。" },
+			{ stars: 5, title: "音质和续航非常惊人", content: "作为运动手表，它的定位非常准，心率监测和我的心率带误差极小。屏幕在阳光下也很清晰。" },
+            { stars: 4, title: "性价比非常高", content: "功能很多，尤其是那117种运动模式。唯一缺点是表盘稍微有点大，女生戴可能感觉略重。" },
+            { stars: 5, title: "外观大气，连接稳定", content: "连接手机APP速度很快，数据同步顺畅。睡眠监测功能挺有用的。" },
+            { stars: 3, title: "中规中矩吧", content: "外观还行，但APP的界面设计我觉得一般。续航确实能到两周左右。" },
+            { stars: 5, title: "强烈推荐给跑友", content: "GPS搜星很快，轨迹基本没有漂移，这个价格能买到这种定位水准很划算。" },
+            { stars: 2, title: "血氧监测偶尔不准", content: "血氧测量时必须手一动不动，否则容易失败，其他功能还行。" },
+            { stars: 5, title: "电池是真的耐用", content: "出差一周没带充电器，回来还有40%的电，非常省心。" },
+            { stars: 4, title: "屏幕显示效果出色", content: "AMOLED屏幕对比度很高，颜色很正，晚上看也不刺眼。" },
+            { stars: 5, title: "防水性能不错", content: "游泳戴了几次，触屏在水下有锁屏模式，数据记录很详尽。" },
+            { stars: 3, title: "表带材质一般", content: "表带稍微有点硬，戴久了有点出汗感，建议自己换个编织表带。" },
+			{ stars: 5, title: "音质和续航非常惊人", content: "作为运动手表，它的定位非常准，心率监测和我的心率带误差极小。屏幕在阳光下也很清晰。" },
+            { stars: 4, title: "性价比非常高", content: "功能很多，尤其是那117种运动模式。唯一缺点是表盘稍微有点大，女生戴可能感觉略重。" },
+            { stars: 5, title: "外观大气，连接稳定", content: "连接手机APP速度很快，数据同步顺畅。睡眠监测功能挺有用的。" },
+            { stars: 3, title: "中规中矩吧", content: "外观还行，但APP的界面设计我觉得一般。续航确实能到两周左右。" },
+            { stars: 5, title: "强烈推荐给跑友", content: "GPS搜星很快，轨迹基本没有漂移，这个价格能买到这种定位水准很划算。" },
+            { stars: 2, title: "血氧监测偶尔不准", content: "血氧测量时必须手一动不动，否则容易失败，其他功能还行。" },
+            { stars: 5, title: "电池是真的耐用", content: "出差一周没带充电器，回来还有40%的电，非常省心。" },
+            { stars: 4, title: "屏幕显示效果出色", content: "AMOLED屏幕对比度很高，颜色很正，晚上看也不刺眼。" },
+            { stars: 5, title: "防水性能不错", content: "游泳戴了几次，触屏在水下有锁屏模式，数据记录很详尽。" },
+            { stars: 3, title: "表带材质一般", content: "表带稍微有点硬，戴久了有点出汗感，建议自己换个编织表带。" },{ stars: 5, title: "音质和续航非常惊人", content: "作为运动手表，它的定位非常准，心率监测和我的心率带误差极小。屏幕在阳光下也很清晰。" },
+            { stars: 4, title: "性价比非常高", content: "功能很多，尤其是那117种运动模式。唯一缺点是表盘稍微有点大，女生戴可能感觉略重。" },
+            { stars: 5, title: "外观大气，连接稳定", content: "连接手机APP速度很快，数据同步顺畅。睡眠监测功能挺有用的。" },
+            { stars: 3, title: "中规中矩吧", content: "外观还行，但APP的界面设计我觉得一般。续航确实能到两周左右。" },
+            { stars: 5, title: "强烈推荐给跑友", content: "GPS搜星很快，轨迹基本没有漂移，这个价格能买到这种定位水准很划算。" },
+            { stars: 2, title: "血氧监测偶尔不准", content: "血氧测量时必须手一动不动，否则容易失败，其他功能还行。" },
+            { stars: 5, title: "电池是真的耐用", content: "出差一周没带充电器，回来还有40%的电，非常省心。" },
+            { stars: 4, title: "屏幕显示效果出色", content: "AMOLED屏幕对比度很高，颜色很正，晚上看也不刺眼。" },
+            { stars: 5, title: "防水性能不错", content: "游泳戴了几次，触屏在水下有锁屏模式，数据记录很详尽。" },
+            { stars: 3, title: "表带材质一般", content: "表带稍微有点硬，戴久了有点出汗感，建议自己换个编织表带。" }
+            // 这里为了长度简略，你在实际使用时，可以把剩下的30条按此格式继续填入数组
+        ];
+
+        // --- 2. 实验参数管理 ---
+        const experimentData = {
+            startTime: Date.now(),
+            condition: new URLSearchParams(window.location.search).get('condition') || 'rating',
+            viewReviews: false,
+            loadMoreClicks: 0
+        };
+
+        // --- 3. 动态渲染自变量内容 ---
+       // --- 3. 动态渲染自变量内容 ---
+		function initCondition() {
+		    const container = document.getElementById('summaryContent');
+		    const conditionTitle = document.getElementById('conditionTitle'); // 获取标题元素以便调试
+		
+		    // 调试用：在控制台打印当前获取到的组别
+		    console.log("当前实验组别:", experimentData.condition);
+		
+		    if (experimentData.condition === 'rating') {
+		        container.innerHTML = `
+		            <div class="rating-distribution">
+		                <div class="rating-overview">
+		                    <div class="rating-stars-display">★★★★☆</div>
+		                    <div class="rating-average">4.3 / 5</div>
+		                    <div class="rating-total">基于 156 位真实用户评价</div>
+		                </div>
+		                <div class="rating-bar-row">
+		                    <div class="rating-bar-label">5星</div>
+		                    <div class="rating-bar-container"><div class="rating-bar-fill" style="width: 65%"></div></div>
+		                    <div class="rating-bar-percentage">65%</div>
+		                </div>
+		                </div>`;
+		    } else if (experimentData.condition === 'aigrs_positive') {
+		        container.innerHTML = `<div class="aigrs-text">💡 <b>AI 评论总结：</b> 绝大多数用户对这款手表的<b>续航能力</b>和<b>运动定位精度</b>给予了高度评价。1.43寸屏幕显示细腻，5ATM防水可靠，是高性价比的运动辅助设备。</div>`;
+		    } else if (experimentData.condition === 'aigrs_neutral') {
+		        container.innerHTML = `<div class="aigrs-text">💡 <b>AI 评论总结：</b> 用户评价显示该产品各方面表现均衡。在长续航和屏幕显示方面具有优势，但在表带舒适度和血氧测量稳定性方面仍有改进空间。</div>`;
+		    } else if (experimentData.condition === 'aigrs_negative') {
+		        container.innerHTML = `<div class="aigrs-text">💡 <b>AI 评论总结：</b> 部分用户对传感器精度和佩戴舒适度提出了质疑。虽然续航表现出色，但APP交互和血氧监测的稳定性是用户反馈的主要短板。</div>`;
+		    } else {
+		        // 兜底逻辑：如果参数错误，默认显示评分
+		        experimentData.condition = 'rating';
+		        initCondition();
+		    }
+		}
+		
+		// 核心：必须手动调用一次！
+		initCondition();
+
+        // --- 4. 交互逻辑 ---
+        let currentIndex = 0;
+        function renderReviews(num) {
+            const container = document.getElementById('reviewsContainer');
+            const target = Math.min(currentIndex + num, allReviews.length);
+            for (let i = currentIndex; i < target; i++) {
+                const r = allReviews[i];
+                const div = document.createElement('div');
+                div.className = 'review-item';
+                div.innerHTML = `
+                    <div class="review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
+                    <div class="review-title">${r.title}</div>
+                    <div class="review-content">${r.content}</div>`;
+                container.appendChild(div);
+            }
+            currentIndex = target;
+            if (currentIndex >= allReviews.length) document.getElementById('loadMoreBtn').style.display = 'none';
+        }
+
+        document.getElementById('viewReviewsBtn').onclick = function() {
+            experimentData.viewReviews = true;
+            document.getElementById('reviewsSection').classList.add('active');
+            this.style.display = 'none';
+            renderReviews(5);
+        };
+
+        document.getElementById('loadMoreBtn').onclick = function() {
+            experimentData.loadMoreClicks++;
+            renderReviews(5);
+        };
+
+  		document.getElementById('returnBtn').onclick = function() {
+      const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
+      
+      // 构造带参数的返回 URL
+      const urlParams = new URLSearchParams(window.location.search);
+      let returnUrl = urlParams.get('return_url');
+  
+      if (returnUrl) {
+          // 构建新的参数字符串
+          const dataParams = `&stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
+          
+          // 跳转回 Credamo，并将数据拼接在 URL 后面
+          window.location.href = decodeURIComponent(returnUrl) + dataParams;
+      } else {
+          alert("未找到返回地址。停留时长：" + duration + "秒");
+      }
+  };
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
