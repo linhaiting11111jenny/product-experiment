@@ -253,20 +253,18 @@
 		        returnUrl = decodeURIComponent(returnUrl);
 		        
 		        let finalUrl;
-		        // 关键：针对 Credamo 的空白页问题进行修复
+		        // 关键：针对 Credamo 的路由进行“手术级”拼接
+		        // 目标：要把 ?stay_time... 放在最后，不能放在 answer.html 后面
 		        if (returnUrl.includes('#/s/')) {
-		            // 情况 A：地址包含具体的问卷路径 (如 answer.html#/s/bIfEv2)
-		            // 我们把参数强行插在最后，确保路由不丢失
-		            finalUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
-		        } else if (returnUrl.includes('#/')) {
-		            // 情况 B：地址只有根路由
-		            finalUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
+		            // 如果链接里已经有参数了（比如有 _v=...），用 & 连，否则用 ?
+		            const separator = returnUrl.includes('?') ? '&' : '?';
+		            finalUrl = returnUrl + separator + dataParams;
 		        } else {
-		            // 情况 C：普通地址，直接拼接
+		            // 兜底方案
 		            finalUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
 		        }
 		
-		        console.log("最终回传地址:", finalUrl);
+		        console.log("修正后的地址:", finalUrl);
 		        window.location.href = finalUrl;
 		    } else {
 		        alert("采集完毕，请手动点击浏览器返回键。");
@@ -276,6 +274,7 @@
     </script>
 </body>
 </html>
+
 
 
 
