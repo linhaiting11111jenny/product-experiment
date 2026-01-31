@@ -248,38 +248,33 @@
 
 		// --- 5. 数据回传逻辑 (修复版) ---
 		document.getElementById('returnBtn').onclick = function() {
-		    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
-		    
-		    // 获取 URL 中的 return_url 参数
-		    const urlParams = new URLSearchParams(window.location.search);
-		    let returnUrl = urlParams.get('return_url');
-		
-		    if (returnUrl) {
-		        // 关键修复：如果 URL 被 Credamo 编码了，尝试解码一次
-		        if (returnUrl.indexOf('%') !== -1) returnUrl = decodeURIComponent(returnUrl);
-		
-		        try {
-		            // 构造带参数的新链接
-		            const connector = returnUrl.includes('?') ? '&' : '?';
-		            const finalParams = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
-		            const finalRedirectUrl = returnUrl + connector + finalParams;
-		
-		            // 强制顶级窗口跳转，绕过 iframe 限制
-		            if (window.top !== window.self) {
-		                window.top.location.replace(finalRedirectUrl);
-		            } else {
-		                window.location.replace(finalRedirectUrl);
-		            }
-		        } catch (e) {
-		            console.error("URL 解析失败", e);
-		            alert("返回路径解析失败，请联系研究员");
-		        }
-		    } else {
-		        alert(`预览模式：停留时间 ${duration}s, 组别 ${experimentData.condition}`);
-		    }
-		};
-        window.onload = initCondition;
+    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
+    const urlParams = new URLSearchParams(window.location.search);
+    let returnUrl = urlParams.get('return_url');
+
+    if (returnUrl && returnUrl !== "[LINK]") {
+        // 解码链接
+        returnUrl = decodeURIComponent(returnUrl);
+        
+        // 构造传回的数据参数
+        const dataParams = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
+        
+        // 拼接：判断原链接是否有参数
+        const finalRedirectUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
+
+        // 核心：强制顶级窗口跳转
+        if (window.top) {
+            window.top.location.href = finalRedirectUrl;
+        } else {
+            window.location.href = finalRedirectUrl;
+        }
+    } else {
+        // 如果 return_url 还是 [LINK]，说明 Credamo 没传过来
+        alert(`跳转失败！\n当前 return_url 的值是: ${returnUrl}\n这通常是因为在预览模式下 [LINK] 标签未被 Credamo 替换。\n\n本地数据模拟：\n停留时间: ${duration}s\n组别: ${experimentData.condition}`);
+    }
+};
     </script>
 </body>
 </html>
+
 
