@@ -168,51 +168,43 @@
         };
 
         // --- 3. 动态渲染自变量内容 ---
-        function initCondition() {
-            const container = document.getElementById('summaryContent');
-            
-            if (experimentData.condition === 'rating') {
-                container.innerHTML = `
-                    <div class="rating-distribution">
-                        <div class="rating-overview">
-                            <div class="rating-stars-display">★★★★☆</div>
-                            <div class="rating-average">4.3 / 5</div>
-                            <div class="rating-total">基于 156 位真实用户评价</div>
-                        </div>
-                        <div class="rating-bar-row">
-                            <div class="rating-bar-label">5星</div>
-                            <div class="rating-bar-container"><div class="rating-bar-fill" style="width: 65%"></div></div>
-                            <div class="rating-bar-percentage">65%</div>
-                        </div>
-                        <div class="rating-bar-row">
-                            <div class="rating-bar-label">4星</div>
-                            <div class="rating-bar-container"><div class="rating-bar-fill" style="width: 20%"></div></div>
-                            <div class="rating-bar-percentage">20%</div>
-                        </div>
-                        <div class="rating-bar-row">
-                            <div class="rating-bar-label">3星</div>
-                            <div class="rating-bar-container"><div class="rating-bar-fill" style="width: 8%"></div></div>
-                            <div class="rating-bar-percentage">8%</div>
-                        </div>
-                        <div class="rating-bar-row">
-                            <div class="rating-bar-label">2星</div>
-                            <div class="rating-bar-container"><div class="rating-bar-fill" style="width: 4%"></div></div>
-                            <div class="rating-bar-percentage">4%</div>
-                        </div>
-                        <div class="rating-bar-row">
-                            <div class="rating-bar-label">1星</div>
-                            <div class="rating-bar-container"><div class="rating-bar-fill" style="width: 3%"></div></div>
-                            <div class="rating-bar-percentage">3%</div>
-                        </div>
-                    </div>`;
-            } else if (experimentData.condition === 'aigrs_positive') {
-                container.innerHTML = `<div class="aigrs-text">💡 <b>AI 评论总结：</b> 绝大多数用户对这款手表的<b>续航能力</b>和<b>运动定位精度</b>给予了高度评价。1.43寸屏幕显示细腻，5ATM防水可靠，是高性价比的运动辅助设备。</div>`;
-            } else if (experimentData.condition === 'aigrs_neutral') {
-                container.innerHTML = `<div class="aigrs-text">💡 <b>AI 评论总结：</b> 用户评价显示该产品各方面表现均衡。在长续航和屏幕显示方面具有优势，但在表带舒适度和血氧测量稳定性方面仍有改进空间。</div>`;
-            } else if (experimentData.condition === 'aigrs_negative') {
-                container.innerHTML = `<div class="aigrs-text">💡 <b>AI 评论总结：</b> 部分用户对传感器精度和佩戴舒适度提出了质疑。虽然续航表现出色，但APP交互和血氧监测的稳定性是用户反馈的主要短板。</div>`;
-            }
-        }
+       // --- 3. 动态渲染自变量内容 ---
+		function initCondition() {
+		    const container = document.getElementById('summaryContent');
+		    const conditionTitle = document.getElementById('conditionTitle'); // 获取标题元素以便调试
+		
+		    // 调试用：在控制台打印当前获取到的组别
+		    console.log("当前实验组别:", experimentData.condition);
+		
+		    if (experimentData.condition === 'rating') {
+		        container.innerHTML = `
+		            <div class="rating-distribution">
+		                <div class="rating-overview">
+		                    <div class="rating-stars-display">★★★★☆</div>
+		                    <div class="rating-average">4.3 / 5</div>
+		                    <div class="rating-total">基于 156 位真实用户评价</div>
+		                </div>
+		                <div class="rating-bar-row">
+		                    <div class="rating-bar-label">5星</div>
+		                    <div class="rating-bar-container"><div class="rating-bar-fill" style="width: 65%"></div></div>
+		                    <div class="rating-bar-percentage">65%</div>
+		                </div>
+		                </div>`;
+		    } else if (experimentData.condition === 'aigrs_positive') {
+		        container.innerHTML = `<div class="aigrs-text">💡 <b>AI 评论总结：</b> 绝大多数用户对这款手表的<b>续航能力</b>和<b>运动定位精度</b>给予了高度评价。1.43寸屏幕显示细腻，5ATM防水可靠，是高性价比的运动辅助设备。</div>`;
+		    } else if (experimentData.condition === 'aigrs_neutral') {
+		        container.innerHTML = `<div class="aigrs-text">💡 <b>AI 评论总结：</b> 用户评价显示该产品各方面表现均衡。在长续航和屏幕显示方面具有优势，但在表带舒适度和血氧测量稳定性方面仍有改进空间。</div>`;
+		    } else if (experimentData.condition === 'aigrs_negative') {
+		        container.innerHTML = `<div class="aigrs-text">💡 <b>AI 评论总结：</b> 部分用户对传感器精度和佩戴舒适度提出了质疑。虽然续航表现出色，但APP交互和血氧监测的稳定性是用户反馈的主要短板。</div>`;
+		    } else {
+		        // 兜底逻辑：如果参数错误，默认显示评分
+		        experimentData.condition = 'rating';
+		        initCondition();
+		    }
+		}
+		
+		// 核心：必须手动调用一次！
+		initCondition();
 
         // --- 4. 交互逻辑 ---
         let currentIndex = 0;
@@ -276,5 +268,6 @@
     </script>
 </body>
 </html>
+
 
 
