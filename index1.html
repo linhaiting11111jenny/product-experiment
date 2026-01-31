@@ -841,72 +841,81 @@
                     }
                 }
             });
-
-            // 返回问卷按钮
-            document.getElementById('returnBtn').addEventListener('click', function() {
+            // 返回问卷按钮 - 兼容两种方式
+            document.getElementById('returnBtn').addEventListener('click', function () {
+                // 计算停留时间
+                const startTime = new Date(experimentData.page_load_time).getTime();
+                const staySeconds = Math.round((Date.now() - startTime) / 1000);
+                
+                // 获取返回URL和条件
+                const returnUrl = getUrlParameter('return_url');
+                const urlCondition = getUrlParameter('condition');
+                
+                // 准备返回数据
+                const returnData = {
+                    condition: urlCondition || 'unknown',
+                    view_reviews: experimentData.view_reviews ? 1 : 0,
+                    load_more_cnt: experimentData.total_load_more_clicks || 0,
+                    stay_time: staySeconds,
+                    respondent_id: experimentData.respondent_id || '',
+                    survey_id: experimentData.survey_id || '',
+                    experiment_complete: 1,
+                    experiment_timestamp: new Date().toISOString()
+                };
+                
+                // 方法1：尝试发送消息给父窗口（如果在iframe中或新窗口）
                 try {
-                    experimentData.return_click_time = new Date().toISOString();
-                    
-                    // 计算停留时间
-                    const endTime = Date.now();
-                    const startTime = new Date(experimentData.page_load_time).getTime();
-                    const staySeconds = Math.max(0, Math.round((endTime - startTime) / 1000));
-                    
-                    // 准备跳转参数
-                    const returnUrl = getUrlParameter('return_url');
-                    if (isValidUrl(returnUrl)) {
-                        const params = new URLSearchParams();
-                        params.set('condition', experimentData.condition || '');
-                        params.set('view_reviews', experimentData.view_reviews ? 1 : 0);
-                        params.set('load_more_cnt', experimentData.total_load_more_clicks || 0);
-                        params.set('stay_time', staySeconds);
-                        
-                        const separator = returnUrl.includes('?') ? '&' : '?';
-                        const fullUrl = returnUrl + separator + params.toString();
-                        
-                        if (window.top && window.top.location) {
-                            window.top.location.href = fullUrl;
-                        } else {
-                            window.location.href = fullUrl;
-                        }
+                    if (window.opener) {
+                        // 如果是window.open打开的
+                        window.opener.postMessage({
+                            type: 'experiment_complete',
+                            data: returnData
+                        }, '*');
                     }
                     
-                    // 发送数据
-                    sendDataToParent({
-                        condition: experimentData.condition,
-                        view_reviews: experimentData.view_reviews,
-                        load_more_cnt: experimentData.total_load_more_clicks,
-                        stay_time: staySeconds,
-                        return_click_time: experimentData.return_click_time
-                    });
+                    // 发送给任何父窗口
+                    window.parent.postMessage({
+                        type: 'experiment_complete',
+                        data: returnData
+                    }, '*');
                 } catch (e) {
-                    console.error('返回问卷失败:', e);
-                    // 兜底发送数据
-                    sendDataToParent({
-                        condition: experimentData.condition,
-                        view_reviews: experimentData.view_reviews,
-                        load_more_cnt: experimentData.total_load_more_clicks,
-                        error: e.message
-                    });
+                    console.log('无法发送消息给父窗口');
                 }
-            });
-
-            // 页面可见性变化（替代beforeunload）
-            let pageLeft = false;
-            window.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'hidden' && !pageLeft) {
-                    pageLeft = true;
-                    experimentData.page_leave_time = new Date().toISOString();
+                
+                // 方法2：通过URL跳转（主要方式）
+                if (returnUrl && returnUrl.trim() !== '' && returnUrl !== 'null') {
+                    const params = new URLSearchParams();
                     
-                    // 发送离开数据
-                    sendDataToParent({
-                        condition: experimentData.condition,
-                        view_reviews: experimentData.view_reviews,
-                        total_load_more_clicks: experimentData.total_load_more_clicks,
-                        page_leave_time: experimentData.page_leave_time
+                    // 添加所有数据到URL参数
+                    Object.keys(returnData).forEach(key => {
+                        if (returnData[key] !== null && returnData[key] !== undefined) {
+                            params.set(key, returnData[key].toString());
+                        }
                     });
+                    
+                    const separator = returnUrl.includes('?') ? '&' : '?';
+                    const fullUrl = returnUrl + separator + params.toString();
+                    
+                    console.log('跳转回Credamo：', fullUrl);
+                    
+                    // 重要：如果是新窗口打开的，先关闭自己再跳转
+                    if (window.opener) {
+                        window.opener.location.href = fullUrl;
+                        window.close(); // 关闭实验窗口
+                    } else {
+                        window.location.href = fullUrl; // 直接跳转
+                    }
+                } else {
+                    // 方法3：如果没有返回URL，显示完成信息
+                    alert('实验完成！\n\n停留时间：' + staySeconds + '秒\n\n请返回问卷页面继续。');
+                    
+                    // 尝试关闭窗口（如果是新窗口）
+                    if (window.opener) {
+                        window.close();
+                    }
                 }
             });
+           
 
             // 页面加载完成
             window.addEventListener('load', () => {
@@ -948,3 +957,4 @@
 </body>
 
 </html>
+
