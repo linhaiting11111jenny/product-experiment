@@ -405,39 +405,38 @@
     </section>
 
     <!-- ② 评分 & 评论摘要区 -->
-    <section class="summary-section" id="summarySection" name="summarySection">
+    <section class="summary-section" id="summarySection">
         <div class="summary-title">用户评论摘要</div>
-        <div id="summaryContent" name="summaryContent"></div>
+        <div id="summaryContent"></div>
     </section>
 
     <!-- ③ 操作按钮区 -->
-    <section class="action-section" id="actionSection" name="actionSection">
-        <button class="btn-primary" id="viewReviewsBtn" name="viewReviewsBtn">查看原始评论</button>
+    <section class="action-section">
+        <button class="btn-primary" id="viewReviewsBtn">查看原始评论</button>
     </section>
 
     <!-- ④ 原始评论区 -->
-    <section class="reviews-section" id="reviewsSection" name="reviewsSection">
+    <section class="reviews-section" id="reviewsSection">
         <div class="reviews-title">用户评论</div>
-        <div id="reviewsContainer" name="reviewsContainer"></div>
-        <div class="load-more-section" id="loadMoreSection" name="loadMoreSection">
-            <button class="btn-load-more" id="loadMoreBtn" name="loadMoreBtn">加载更多评论</button>
+        <div id="reviewsContainer"></div>
+        <div class="load-more-section">
+            <button class="btn-load-more" id="loadMoreBtn">加载更多评论</button>
         </div>
     </section>
 
     <!-- ⑤ 返回问卷按钮 -->
-    <section class="return-section" id="returnSection" name="returnSection">
-        <button class="btn-return" id="returnBtn" name="returnBtn">完成浏览，返回问卷</button>
+    <section class="return-section">
+        <button class="btn-return" id="returnBtn">完成浏览，返回问卷</button>
     </section>
 
     <script>
         // ==============================================
-        // 核心配置
+        // 配置常量
         // ==============================================
         const CONFIG = {
             reviewsPerLoad: 9,
             maxLoads: 5,
-            starColor: '#ffa500',
-            postMessageTarget: '*'
+            starColor: '#ffa500'
         };
 
         // ==============================================
@@ -454,7 +453,7 @@
             
             // 时间戳记录
             link_click_time: null,
-            page_load_time: new Date().toISOString(),
+            page_load_time: null,
             page_load_complete_time: null,
             dom_content_loaded_time: null,
             
@@ -471,7 +470,8 @@
             page_leave_time: null,
             
             // 其他行为
-            return_click_time: null
+            return_click_time: null,
+            abandoned: false
         };
 
         // ==============================================
@@ -526,8 +526,6 @@
         
         /**
          * 从URL获取参数
-         * @param {string} name - 参数名
-         * @returns {string|null} 参数值
          */
         function getUrlParameter(name) {
             try {
@@ -540,44 +538,59 @@
         }
 
         /**
-         * 检测是否在iframe中
-         * @returns {boolean}
-         */
-        function isInIframe() {
-            try {
-                return window.self !== window.top;
-            } catch (e) {
-                return true;
-            }
-        }
-
-        /**
          * 验证URL有效性
-         * @param {string} url - 待验证的URL
-         * @returns {boolean}
          */
         function isValidUrl(url) {
             if (!url || typeof url !== 'string') return false;
             const trimmed = url.trim();
-            if (trimmed === '') return false;
-            if (trimmed.includes('{{') && trimmed.includes('}}')) return false;
+            if (trimmed === '' || trimmed === 'null' || trimmed === 'undefined') return false;
+            
+            // 接受Credamo的模板变量
+            if (trimmed.includes('{{') && trimmed.includes('}}')) {
+                return true;
+            }
             
             try {
-                const urlObj = new URL(trimmed);
-                return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+                new URL(trimmed);
+                return true;
             } catch (e) {
-                return false;
+                return /^[a-zA-Z0-9-_~:/.?#[\]@!$&'()*+,;=%]+$/.test(trimmed);
             }
         }
 
         /**
          * 生成星级字符串
-         * @param {number} rating - 评分（1-5）
-         * @returns {string} 星级字符串
          */
         function generateStarString(rating) {
             const validRating = Math.max(1, Math.min(5, Math.floor(rating)));
             return '★'.repeat(validRating) + '☆'.repeat(5 - validRating);
+        }
+
+        /**
+         * 发送消息给父窗口
+         */
+        function sendPostMessage(data) {
+            try {
+                // 发送给opener（如果是window.open打开的）
+                if (window.opener && !window.opener.closed) {
+                    window.opener.postMessage({
+                        type: 'experiment_complete',
+                        data: data
+                    }, '*');
+                    console.log('消息已发送给opener');
+                }
+                
+                // 发送给parent（如果在iframe中）
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'experiment_complete',
+                        data: data
+                    }, '*');
+                    console.log('消息已发送给parent');
+                }
+            } catch (e) {
+                console.log('postMessage发送失败:', e.message);
+            }
         }
 
         // ==============================================
@@ -585,32 +598,30 @@
         // ==============================================
         
         /**
-         * 初始化实验数据（从URL获取参数）
+         * 初始化实验数据
          */
         function initExperimentData() {
+            console.log('初始化实验数据...');
+            
+            // 记录页面加载时间
+            experimentData.page_load_time = new Date().toISOString();
+            
             // 获取问卷相关ID
             experimentData.survey_id = getUrlParameter('survey_id') || 
                                       getUrlParameter('surveyId') || 
-                                      getUrlParameter('survey') ||
                                       getUrlParameter('id') ||
                                       null;
             
-            experimentData.user_id = getUrlParameter('user_id') || 
-                                    getUrlParameter('userId') || 
-                                    getUrlParameter('user') ||
-                                    null;
-            
             experimentData.respondent_id = getUrlParameter('respondent_id') || 
-                                          getUrlParameter('respondentId') || 
-                                          getUrlParameter('respondent') ||
+                                          getUrlParameter('respondentId') ||
                                           null;
             
             // 获取实验条件
             experimentData.condition = getUrlParameter('condition') || 'rating';
             
-            // 记录点击链接时间
-            const linkClickTime = getUrlParameter('link_click_time');
-            experimentData.link_click_time = linkClickTime || experimentData.page_load_time;
+            console.log('实验条件:', experimentData.condition);
+            console.log('问卷ID:', experimentData.survey_id);
+            console.log('受访者ID:', experimentData.respondent_id);
         }
 
         /**
@@ -632,6 +643,8 @@
                 ]
             };
 
+            let htmlContent = '';
+            
             switch (condition) {
                 case 'rating':
                     // 星级分布图
@@ -646,7 +659,7 @@
                         </div>
                     `).join('');
 
-                    summaryContent.innerHTML = `
+                    htmlContent = `
                         <div class="rating-distribution">
                             <div class="rating-overview">
                                 <div class="rating-stars-display">${starsDisplay}</div>
@@ -661,8 +674,7 @@
                     break;
 
                 case 'aigrs_neutral':
-                    // 中立版摘要
-                    summaryContent.innerHTML = `
+                    htmlContent = `
                         <div class="aigrs-text">
                             用户评论显示，该产品在音质、续航和舒适度方面表现稳定。部分用户对降噪功能有不同看法，整体评价较为均衡。
                         </div>
@@ -670,8 +682,7 @@
                     break;
 
                 case 'aigrs_positive':
-                    // 正向版摘要
-                    summaryContent.innerHTML = `
+                    htmlContent = `
                         <div class="aigrs-text">
                             用户评论显示，该产品在音质、续航和舒适度方面获得较多好评。大部分用户对产品整体表现表示满意，认为性价比较高。
                         </div>
@@ -679,47 +690,27 @@
                     break;
 
                 case 'aigrs_negative':
-                    // 负向版摘要
-                    summaryContent.innerHTML = `
+                    htmlContent = `
                         <div class="aigrs-text aigrs-negative-text">
                             用户评论显示，该产品在某些方面存在不足。部分用户反馈续航时间未达预期，降噪效果有待提升。
                         </div>
                     `;
                     break;
 
-                case 'detailed_rating':
-                    // 详细评分版
-                    summaryContent.innerHTML = `
-                        <div class="detailed-rating">
-                            <div class="rating-summary">
-                                <div class="stars">${generateStarString(4)}</div>
-                                <div class="rating-count">共 156 条评论</div>
-                            </div>
-                            <div class="rating-breakdown">
-                                <div class="breakdown-item">音质：4.5分</div>
-                                <div class="breakdown-item">续航：4.2分</div>
-                                <div class="breakdown-item">舒适度：4.3分</div>
-                            </div>
-                        </div>
-                    `;
-                    break;
-
                 default:
-                    // 默认摘要
-                    summaryContent.innerHTML = `
+                    htmlContent = `
                         <div class="rating-summary">
                             <div class="stars">${generateStarString(4)}</div>
                             <div class="rating-count">共 156 条评论</div>
                         </div>
                     `;
             }
+            
+            summaryContent.innerHTML = htmlContent;
         }
 
         /**
          * 渲染评论列表
-         * @param {number} startIndex - 起始索引
-         * @param {number} count - 渲染数量
-         * @returns {number} 新的起始索引
          */
         function renderReviews(startIndex, count) {
             const container = document.getElementById('reviewsContainer');
@@ -745,42 +736,115 @@
         }
 
         /**
-         * 向父窗口发送实验数据
-         * @param {object} data - 要发送的数据
+         * 跳转回Credamo
          */
-        function sendDataToParent(data) {
-            if (isInIframe() && window.parent) {
-                // 发送postMessage
-                window.parent.postMessage({
-                    type: 'experiment_complete',
-                    data: data
-                }, CONFIG.postMessageTarget);
+        function redirectToCredamo(returnUrl, data) {
+            try {
+                const params = new URLSearchParams();
+                params.set('condition', data.condition);
+                params.set('view_reviews', data.view_reviews);
+                params.set('load_more_cnt', data.load_more_cnt);
+                params.set('stay_time', data.stay_time);
+                params.set('experiment_complete', '1');
                 
-                // 尝试URL跳转
-                const returnUrl = getUrlParameter('return_url');
-                if (isValidUrl(returnUrl)) {
-                    try {
-                        const params = new URLSearchParams();
-                        params.set('experiment_data', JSON.stringify(data));
-                        const separator = returnUrl.includes('?') ? '&' : '?';
-                        const fullUrl = returnUrl + separator + params.toString();
-                        
-                        if (window.top && window.top !== window.self) {
-                            window.top.location.href = fullUrl;
-                        } else {
-                            window.location.href = fullUrl;
+                const separator = returnUrl.includes('?') ? '&' : '?';
+                const fullUrl = returnUrl + separator + params.toString();
+                
+                console.log('跳转到Credamo:', fullUrl);
+                
+                // 如果是新窗口打开的，先让父窗口跳转，然后关闭自己
+                if (window.opener && !window.opener.closed) {
+                    window.opener.location.href = fullUrl;
+                    setTimeout(() => {
+                        if (!window.closed) {
+                            window.close();
                         }
-                    } catch (e) {
-                        console.error('URL跳转失败:', e);
-                    }
+                    }, 500);
+                } else {
+                    // 直接跳转
+                    window.location.href = fullUrl;
                 }
+                
+                return true;
+            } catch (e) {
+                console.error('跳转失败:', e);
+                return false;
+            }
+        }
+
+        /**
+         * 显示完成提示
+         */
+        function showCompletionAlert(staySeconds, data) {
+            const message = `实验完成！
+
+浏览时间：${staySeconds}秒
+实验条件：${data.condition}
+是否查看评论：${data.view_reviews ? '是' : '否'}
+加载更多次数：${data.load_more_cnt}
+
+请返回问卷页面继续。`;
+            
+            alert(message);
+            
+            // 如果是新窗口打开的，建议用户关闭
+            if (window.opener && !window.opener.closed) {
+                setTimeout(() => {
+                    if (confirm('是否关闭此窗口？')) {
+                        window.close();
+                    }
+                }, 1000);
             }
         }
 
         // ==============================================
-        // 事件绑定
+        // 事件处理
         // ==============================================
         
+        /**
+         * 处理返回问卷按钮点击
+         */
+        function handleReturnButtonClick() {
+            // 记录点击时间
+            experimentData.return_click_time = new Date().toISOString();
+            
+            // 计算停留时间
+            const startTime = new Date(experimentData.page_load_time).getTime();
+            const staySeconds = Math.round((Date.now() - startTime) / 1000);
+            
+            // 获取返回URL
+            const returnUrl = getUrlParameter('return_url');
+            const urlCondition = getUrlParameter('condition') || experimentData.condition;
+            
+            // 准备返回数据
+            const returnData = {
+                condition: urlCondition,
+                view_reviews: experimentData.view_reviews ? 1 : 0,
+                load_more_cnt: experimentData.total_load_more_clicks || 0,
+                stay_time: staySeconds,
+                respondent_id: experimentData.respondent_id || '',
+                survey_id: experimentData.survey_id || '',
+                experiment_complete: 1,
+                experiment_timestamp: new Date().toISOString()
+            };
+            
+            console.log('实验数据准备完成:', returnData);
+            console.log('返回URL:', returnUrl);
+            
+            // 发送消息给父窗口
+            sendPostMessage(returnData);
+            
+            // 尝试跳转回Credamo
+            if (returnUrl && isValidUrl(returnUrl)) {
+                const success = redirectToCredamo(returnUrl, returnData);
+                if (!success) {
+                    showCompletionAlert(staySeconds, returnData);
+                }
+            } else {
+                showCompletionAlert(staySeconds, returnData);
+            }
+        }
+
         /**
          * 初始化事件监听
          */
@@ -841,99 +905,26 @@
                     }
                 }
             });
-            // 返回问卷按钮 - 兼容两种方式
-            document.getElementById('returnBtn').addEventListener('click', function () {
-                // 计算停留时间
-                const startTime = new Date(experimentData.page_load_time).getTime();
-                const staySeconds = Math.round((Date.now() - startTime) / 1000);
-                
-                // 获取返回URL和条件
-                const returnUrl = getUrlParameter('return_url');
-                const urlCondition = getUrlParameter('condition');
-                
-                // 准备返回数据
-                const returnData = {
-                    condition: urlCondition || 'unknown',
-                    view_reviews: experimentData.view_reviews ? 1 : 0,
-                    load_more_cnt: experimentData.total_load_more_clicks || 0,
-                    stay_time: staySeconds,
-                    respondent_id: experimentData.respondent_id || '',
-                    survey_id: experimentData.survey_id || '',
-                    experiment_complete: 1,
-                    experiment_timestamp: new Date().toISOString()
-                };
-                
-                // 方法1：尝试发送消息给父窗口（如果在iframe中或新窗口）
-                try {
-                    if (window.opener) {
-                        // 如果是window.open打开的
-                        window.opener.postMessage({
-                            type: 'experiment_complete',
-                            data: returnData
-                        }, '*');
-                    }
-                    
-                    // 发送给任何父窗口
-                    window.parent.postMessage({
-                        type: 'experiment_complete',
-                        data: returnData
-                    }, '*');
-                } catch (e) {
-                    console.log('无法发送消息给父窗口');
-                }
-                
-                // 方法2：通过URL跳转（主要方式）
-                if (returnUrl && returnUrl.trim() !== '' && returnUrl !== 'null') {
-                    const params = new URLSearchParams();
-                    
-                    // 添加所有数据到URL参数
-                    Object.keys(returnData).forEach(key => {
-                        if (returnData[key] !== null && returnData[key] !== undefined) {
-                            params.set(key, returnData[key].toString());
-                        }
-                    });
-                    
-                    const separator = returnUrl.includes('?') ? '&' : '?';
-                    const fullUrl = returnUrl + separator + params.toString();
-                    
-                    console.log('跳转回Credamo：', fullUrl);
-                    
-                    // 重要：如果是新窗口打开的，先关闭自己再跳转
-                    if (window.opener) {
-                        window.opener.location.href = fullUrl;
-                        window.close(); // 关闭实验窗口
-                    } else {
-                        window.location.href = fullUrl; // 直接跳转
-                    }
-                } else {
-                    // 方法3：如果没有返回URL，显示完成信息
-                    alert('实验完成！\n\n停留时间：' + staySeconds + '秒\n\n请返回问卷页面继续。');
-                    
-                    // 尝试关闭窗口（如果是新窗口）
-                    if (window.opener) {
-                        window.close();
-                    }
+            
+            // 返回问卷按钮
+            document.getElementById('returnBtn').addEventListener('click', handleReturnButtonClick);
+            
+            // 页面卸载检测
+            window.addEventListener('beforeunload', function() {
+                if (!experimentData.return_click_time) {
+                    experimentData.abandoned = true;
+                    experimentData.abandon_time = new Date().toISOString();
+                    console.log('用户未完成实验就离开');
                 }
             });
-           
-
-            // 页面加载完成
-            window.addEventListener('load', () => {
-                experimentData.page_load_complete_time = new Date().toISOString();
-            });
-
-            // 清理事件监听
-            window.addEventListener('unload', () => {
-                document.getElementById('viewReviewsBtn').removeEventListener('click', null);
-                document.getElementById('loadMoreBtn').removeEventListener('click', null);
-                document.getElementById('returnBtn').removeEventListener('click', null);
-            }, { once: true });
         }
 
         // ==============================================
         // 初始化应用
         // ==============================================
         function initApp() {
+            console.log('实验页面初始化开始...');
+            
             // 初始化实验数据
             initExperimentData();
             
@@ -945,16 +936,21 @@
             
             // 记录DOM加载完成时间
             experimentData.dom_content_loaded_time = new Date().toISOString();
+            
+            console.log('实验页面初始化完成');
         }
 
-        // DOM加载完成后初始化
+        // 启动应用
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initApp);
         } else {
             initApp();
         }
+
+        // 页面加载完成事件
+        window.addEventListener('load', function() {
+            experimentData.page_load_complete_time = new Date().toISOString();
+        });
     </script>
 </body>
-
 </html>
-
