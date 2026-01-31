@@ -240,34 +240,28 @@
 
 		// --- 5. 数据回传逻辑 (修复版) ---
 		document.getElementById('returnBtn').onclick = function() {
-    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
-    const urlParams = new URLSearchParams(window.location.search);
-    let returnUrl = urlParams.get('return_url');
-
-    if (returnUrl && returnUrl !== "[LINK]") {
-        // 解码链接
-        returnUrl = decodeURIComponent(returnUrl);
-        
-        // 构造传回的数据参数
-        const dataParams = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
-        
-        // 拼接：判断原链接是否有参数
-        const finalRedirectUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
-
-        // 核心：强制顶级窗口跳转
-        if (window.top) {
-            window.top.location.href = finalRedirectUrl;
-        } else {
-            window.location.href = finalRedirectUrl;
-        }
-    } else {
-        // 如果 return_url 还是 [LINK]，说明 Credamo 没传过来
-        alert(`跳转失败！\n当前 return_url 的值是: ${returnUrl}\n这通常是因为在预览模式下 [LINK] 标签未被 Credamo 替换。\n\n本地数据模拟：\n停留时间: ${duration}s\n组别: ${experimentData.condition}`);
-    }
-};
+		    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
+		    const urlParams = new URLSearchParams(window.location.search);
+		    let returnUrl = urlParams.get('return_url');
+		
+		    if (returnUrl && returnUrl !== "[LINK]") {
+		        returnUrl = decodeURIComponent(returnUrl);
+		        
+		        // 拼接数据参数
+		        const dataParams = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
+		        
+		        const finalRedirectUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
+		
+		        // 执行跳转
+		        window.top.location.href = finalRedirectUrl;
+		    } else {
+		        alert("预览模式：数据已采集，但在正式问卷中才会自动跳转。\n停留时间：" + duration + "s");
+		    }
+		};
     </script>
 </body>
 </html>
+
 
 
 
