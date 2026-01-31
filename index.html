@@ -827,61 +827,55 @@
             }
         }
 
-		// 返回问卷按钮 - 修改版
+				// --- 请替换 index.html 中对应的 returnBtn 监听部分 ---
 		document.getElementById('returnBtn').addEventListener('click', function () {
-		    // 计算停留时间（秒）
+		    // 1. 计算停留时间
 		    const startTime = new Date(experimentData.page_load_time).getTime();
 		    const staySeconds = Math.round((Date.now() - startTime) / 1000);
 		    
-		    // 获取返回URL（来自Credamo的return_url参数）
+		    // 2. 获取 Credamo 传入的必要参数
 		    const returnUrl = getUrlParameter('return_url');
-		    const urlCondition = getUrlParameter('condition'); // 重要：获取URL中的condition
-		    
-		    if (returnUrl && returnUrl.trim() !== '') {
-		        // 构建URL参数
+		    const currentCondition = getUrlParameter('condition') || experimentData.condition;
+		    const resId = getUrlParameter('respondent_id');
+		    const sId = getUrlParameter('survey_id');
+		
+		    // 3. 检查是否有回传地址
+		    if (returnUrl && returnUrl.trim() !== '' && !returnUrl.includes('{{')) {
 		        const params = new URLSearchParams();
 		        
-		        // 核心实验数据
-		        params.set('condition', urlCondition || 'unknown'); // 使用URL中的condition
+		        // 【核心数据】这里的参数名必须与你在 Credamo 定义的变量名一致
+		        params.set('condition', currentCondition);
 		        params.set('view_reviews', experimentData.view_reviews ? '1' : '0');
 		        params.set('load_more_cnt', (experimentData.total_load_more_clicks || 0).toString());
 		        params.set('stay_time', staySeconds.toString());
-		        
-		        // 身份信息
-		        params.set('respondent_id', experimentData.respondent_id || '');
-		        params.set('survey_id', experimentData.survey_id || '');
-		        
-		        // 完成标记和时间戳
 		        params.set('experiment_complete', '1');
-		        params.set('experiment_timestamp', new Date().toISOString());
 		        
-		        // 构建完整URL
+		        // 保持受访者身份（如果有）
+		        if (resId) params.set('respondent_id', resId);
+		        if (sId) params.set('survey_id', sId);
+		
+		        // 4. 构建最终回传链接
 		        const separator = returnUrl.includes('?') ? '&' : '?';
-		        const fullUrl = returnUrl + separator + params.toString();
+		        const finalUrl = returnUrl + separator + params.toString();
 		        
-		        console.log('返回Credamo的URL：', fullUrl);
-		        
-		        // 跳转回Credamo
-		        window.location.href = fullUrl;
-		        
-		    } else {
-		        // 如果没有返回URL，显示数据并提示
-		        const summary = `
-		实验条件：${experimentData.condition}
-		是否查看评论：${experimentData.view_reviews ? '是' : '否'}
-		加载更多次数：${experimentData.total_load_more_clicks || 0}
-		停留时间：${staySeconds}秒
-		        `;
-		        
-		        alert('实验完成！\n\n' + summary + '\n\n您可以关闭此页面。');
-		        
-		        // 可选：复制数据到剪贴板
-		        try {
-		            navigator.clipboard.writeText(summary);
-		            console.log('实验数据已复制到剪贴板');
-		        } catch (e) {
-		            console.log('无法复制到剪贴板');
+		        console.log('正在返回 Credamo:', finalUrl);
+		
+		        // 5. 跨框架跳转：确保整个页面跳转，而不仅仅是 iframe 内部
+		        if (window.top && window.top !== window.self) {
+		            window.top.location.href = finalUrl;
+		        } else {
+		            window.location.href = finalUrl;
 		        }
+		    } else {
+		        // 如果不在实验环境（直接打开 HTML 文件），则弹出提示
+		        const summary = `
+		        [本地预览模式]
+		        实验条件: ${currentCondition}
+		        停留时间: ${staySeconds}秒
+		        查看评论: ${experimentData.view_reviews ? '是' : '否'}
+		        加载更多: ${experimentData.total_load_more_clicks}次
+		        `;
+		        alert('实验完成！数据回传失败：未检测到有效 return_url。\n' + summary);
 		    }
 		});
 
@@ -905,5 +899,6 @@
     </script>
 </body>
 </html>
+
 
 
