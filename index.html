@@ -238,45 +238,40 @@
         };
 
 		// --- 5. 数据回传逻辑 (最终手术级修复版) ---
+		// --- 5. 数据回传逻辑 (LocalStorage 版) ---
 		document.getElementById('returnBtn').onclick = function() {
+		    // 1. 计算并整理数据
 		    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
-		    const urlParams = new URLSearchParams(window.location.search);
-		    let returnUrl = urlParams.get('return_url');
+		    const results = {
+		        stay_time: duration,
+		        is_view: experimentData.viewReviews ? 1 : 0,
+		        click_cnt: experimentData.loadMoreClicks,
+		        group: experimentData.condition,
+		        timestamp: Date.now() // 记录时间戳，防止读取旧数据
+		    };
+		
+		    // 2. 将数据存入浏览器本地存储 (LocalStorage)
+		    // 这样数据就保存在浏览器里，不需要通过 URL 传参了
+		    localStorage.setItem('survey_data_packet', JSON.stringify(results));
+		
+		    // 3. 尝试原路返回
+		    alert("浏览数据已记录！点击确定返回问卷。");
 		    
-		    // 构造我们要传回的参数字符串
-		    const dataParams = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
-		
-		    if (returnUrl && returnUrl.includes('http')) {
-		        returnUrl = decodeURIComponent(returnUrl);
-		        
-		        let finalUrl;
-		        // 如果包含 # 号 (Credamo 的典型链接)
-		        if (returnUrl.includes('#')) {
-		            // 将链接拆分为：[域名和文件名] # [路由/问卷ID]
-		            const parts = returnUrl.split('#');
-		            const baseUrl = parts[0];   // 例如: https://www.credamo.com/answer.html
-		            const routeUrl = parts[1]; // 例如: /s/bIfEv2
-		            
-		            // 核心修复：把参数插在 # 之前！
-		            // 拼接结果：https://www.credamo.com/answer.html?stay_time=x&...#/s/bIfEv2
-		            const separator = baseUrl.includes('?') ? '&' : '?';
-		            finalUrl = baseUrl + separator + dataParams + '#' + routeUrl;
-		        } else {
-		            // 不含 # 的普通链接
-		            finalUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
-		        }
-		
-		        console.log("最终跳转地址:", finalUrl);
-		        window.location.href = finalUrl;
-		    } else {
-		        // 兜底提示
-		        alert("采集完毕，请手动点击浏览器返回键回到问卷。");
+		    // 优先使用后退，这样能保证回到原本那个“不空白”的页面
+		    if (window.history.length > 1) {
 		        window.history.back();
+		    } else {
+		        // 如果后退失效，再跳转回不带参数的 return_url
+		        let returnUrl = new URLSearchParams(window.location.search).get('return_url');
+		        if (returnUrl) {
+		            window.location.href = decodeURIComponent(returnUrl).split('?')[0]; 
+		        }
 		    }
 		};
     </script>
 </body>
 </html>
+
 
 
 
