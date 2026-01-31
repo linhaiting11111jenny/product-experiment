@@ -828,25 +828,42 @@
         }
 
         // 返回问卷按钮
-        document.getElementById('returnBtn').addEventListener('click', function () {
-
-			const endTime = Date.now();
-			const startTime = new Date(experimentData.page_load_time).getTime();
-			const staySeconds = Math.round((endTime - startTime) / 1000);
-			const returnUrl = getUrlParameter('return_url');
-			const params = new URLSearchParams();
-			params.set('condition', experimentData.condition);
-			params.set('view_reviews', experimentData.view_reviews ? 1 : 0);
-			params.set('load_more_cnt', experimentData.total_load_more_clicks || 0);
-			params.set('stay_time', staySeconds);
-			const fullUrl =
-			returnUrl +
-			(returnUrl.includes('?') ? '&' : '?') +
-			params.toString();
-
-		  window.top.location.href = fullUrl;
+		document.getElementById('returnBtn').addEventListener('click', function () {
+		    const endTime = Date.now();
+		    const startTime = new Date(experimentData.page_load_time).getTime();
+		    const staySeconds = Math.round((endTime - startTime) / 1000);
+		    const returnUrl = getUrlParameter('return_url');
+		    
+		    // 1. 拼接回传参数（对应见数的「输出型变量」）
+		    const params = new URLSearchParams();
+		    params.set('condition', experimentData.condition); // 实验条件
+		    params.set('view_reviews', experimentData.view_reviews ? 1 : 0); // 是否看评论
+		    params.set('load_more_cnt', experimentData.total_load_more_clicks || 0); // 加载次数
+		    params.set('stay_time', staySeconds); // 停留时间
+		    
+		    // 2. 拼接返回URL（关键：跳回见数，且携带数据）
+		    const fullUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + params.toString();
+		
+		    // 3. 适配见数iframe：用top.location跳转（避免只刷新iframe）
+		    if (window.top) {
+		        window.top.location.href = fullUrl;
+		    } else {
+		        window.location.href = fullUrl;
+		    }
+		    
+		    // 4. 额外：通过postMessage向见数父页面发送数据（双重保障）
+		    if (window.parent) {
+		        window.parent.postMessage({
+		            type: 'experiment_data',
+		            data: {
+		                condition: experimentData.condition,
+		                view_reviews: experimentData.view_reviews,
+		                load_more_cnt: experimentData.total_load_more_clicks,
+		                stay_time: staySeconds
+		            }
+		        }, '*');
+		    }
 		});
-
 
 
         // 页面加载完成事件
@@ -869,3 +886,4 @@
     </script>
 </body>
 </html>
+
