@@ -240,38 +240,34 @@
 
 		// --- 5. 数据回传逻辑 (修复版) ---
 		// --- 5. 数据回传逻辑 (深度兼容版) ---
+		// GitHub 端的返回按钮逻辑
 		document.getElementById('returnBtn').onclick = function() {
 		    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
 		    const urlParams = new URLSearchParams(window.location.search);
 		    let returnUrl = urlParams.get('return_url');
 		    
-		    // 构造数据字符串
 		    const dataParams = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
 		
-		    if (!returnUrl || returnUrl === "[LINK]") {
-		        alert("测试模式：停留 " + duration + "s，数据已通过 URL 准备就绪。正式环境下将自动跳转。");
-		        window.history.back(); 
-		    } else {
+		    if (returnUrl && returnUrl.indexOf('http') !== -1) {
 		        returnUrl = decodeURIComponent(returnUrl);
 		        
-		        let finalRedirectUrl;
-		        // 关键修复：处理 Credamo 链接中的 # 号
-		        // 如果链接包含 #，我们需要把参数插在 # 前面，或者确保参数在最后能被抓取
+		        let finalUrl;
+		        // 如果链接里有 #，把参数插在 # 前面
 		        if (returnUrl.includes('#')) {
-		            const parts = returnUrl.split('#');
-		            // 将参数拼接在 # 之前，确保能被 URLSearchParams 识别
-		            finalRedirectUrl = parts[0] + (parts[0].includes('?') ? '&' : '?') + dataParams + '#' + parts[1];
+		            let parts = returnUrl.split('#');
+		            finalUrl = parts[0] + (parts[0].includes('?') ? '&' : '?') + dataParams + '#' + parts[1];
 		        } else {
-		            finalRedirectUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
+		            finalUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
 		        }
-		
-		        console.log("即将跳转至:", finalRedirectUrl);
-		        window.location.href = finalRedirectUrl;
+		        window.location.href = finalUrl;
+		    } else {
+		        alert("未获取到返回地址，请手动点击浏览器后退。");
 		    }
 		};
     </script>
 </body>
 </html>
+
 
 
 
