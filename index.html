@@ -248,25 +248,30 @@
 		    
 		    const dataParams = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
 		
-		    if (returnUrl && returnUrl.indexOf('http') !== -1) {
+		    if (returnUrl && returnUrl.includes('http')) {
 		        returnUrl = decodeURIComponent(returnUrl);
 		        
 		        let finalUrl;
-		        // 如果链接里有 #，把参数插在 # 前面
+		        // 如果链接包含 #/s/，这是 Credamo 的路由格式
 		        if (returnUrl.includes('#')) {
-		            let parts = returnUrl.split('#');
+		            const parts = returnUrl.split('#');
+		            // 关键：把参数塞在问卷 ID 之后，或者 # 之前
+		            // 尝试最通用的做法：
 		            finalUrl = parts[0] + (parts[0].includes('?') ? '&' : '?') + dataParams + '#' + parts[1];
 		        } else {
 		            finalUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
 		        }
+		        
 		        window.location.href = finalUrl;
 		    } else {
-		        alert("未获取到返回地址，请手动点击浏览器后退。");
+		        alert("采集成功！停留：" + duration + "s。请点浏览器返回键回到问卷。");
+		        window.history.back();
 		    }
 		};
     </script>
 </body>
 </html>
+
 
 
 
