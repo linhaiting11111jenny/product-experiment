@@ -237,43 +237,47 @@
             renderReviews(5);
         };
 
-
-		// --- 5. 数据回传逻辑 (修复版) ---
-		// --- 5. 数据回传逻辑 (深度兼容版) ---
-		// GitHub 端的返回按钮逻辑
+		// --- 5. 数据回传逻辑 (最终手术级修复版) ---
 		document.getElementById('returnBtn').onclick = function() {
 		    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
 		    const urlParams = new URLSearchParams(window.location.search);
 		    let returnUrl = urlParams.get('return_url');
 		    
-		    // 构造数据字符串
+		    // 构造我们要传回的参数字符串
 		    const dataParams = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
 		
 		    if (returnUrl && returnUrl.includes('http')) {
 		        returnUrl = decodeURIComponent(returnUrl);
 		        
 		        let finalUrl;
-		        // 关键：针对 Credamo 的路由进行“手术级”拼接
-		        // 目标：要把 ?stay_time... 放在最后，不能放在 answer.html 后面
-		        if (returnUrl.includes('#/s/')) {
-		            // 如果链接里已经有参数了（比如有 _v=...），用 & 连，否则用 ?
-		            const separator = returnUrl.includes('?') ? '&' : '?';
-		            finalUrl = returnUrl + separator + dataParams;
+		        // 如果包含 # 号 (Credamo 的典型链接)
+		        if (returnUrl.includes('#')) {
+		            // 将链接拆分为：[域名和文件名] # [路由/问卷ID]
+		            const parts = returnUrl.split('#');
+		            const baseUrl = parts[0];   // 例如: https://www.credamo.com/answer.html
+		            const routeUrl = parts[1]; // 例如: /s/bIfEv2
+		            
+		            // 核心修复：把参数插在 # 之前！
+		            // 拼接结果：https://www.credamo.com/answer.html?stay_time=x&...#/s/bIfEv2
+		            const separator = baseUrl.includes('?') ? '&' : '?';
+		            finalUrl = baseUrl + separator + dataParams + '#' + routeUrl;
 		        } else {
-		            // 兜底方案
+		            // 不含 # 的普通链接
 		            finalUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
 		        }
 		
-		        console.log("修正后的地址:", finalUrl);
+		        console.log("最终跳转地址:", finalUrl);
 		        window.location.href = finalUrl;
 		    } else {
-		        alert("采集完毕，请手动点击浏览器返回键。");
+		        // 兜底提示
+		        alert("采集完毕，请手动点击浏览器返回键回到问卷。");
 		        window.history.back();
 		    }
 		};
     </script>
 </body>
 </html>
+
 
 
 
