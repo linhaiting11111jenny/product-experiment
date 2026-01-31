@@ -243,29 +243,23 @@
 		    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
 		    const urlParams = new URLSearchParams(window.location.search);
 		    let returnUrl = urlParams.get('return_url');
-		
-		    // 构造要传回的数据
 		    const dataParams = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
 		
-		    // 改进的判断逻辑：只要包含 http，就说明是一个有效的回传地址
-		    if (returnUrl && returnUrl.indexOf('http') !== -1) {
-		        returnUrl = decodeURIComponent(returnUrl);
-		        const finalRedirectUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
-		        
-		        // 强制顶级跳转
-		        if (window.top) {
-		            window.top.location.href = finalRedirectUrl;
-		        } else {
-		            window.location.href = finalRedirectUrl;
-		        }
+		    // 如果 returnUrl 是 [LINK] 或者没拿到
+		    if (!returnUrl || returnUrl === "[LINK]") {
+		        // 尝试使用浏览器的前一页记录
+		        alert("由于问卷平台限制，请点击确定后，点击浏览器自带的“返回”键回到问卷，数据将通过缓存记录。");
+		        window.history.back(); 
 		    } else {
-		        // 只有在没拿到合法 URL 时才弹窗提示（方便测试）
-		        alert(`测试模式数据：\n停留时间: ${duration}s\n组别: ${experimentData.condition}\n无法跳转原因: return_url 格式不正确（当前值: ${returnUrl}）`);
+		        // 如果拿到了我们自己传过去的网址，就直接跳
+		        const finalRedirectUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
+		        window.location.href = finalRedirectUrl;
 		    }
-};
+		};
     </script>
 </body>
 </html>
+
 
 
 
