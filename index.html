@@ -239,38 +239,41 @@
 
 		// --- 5. 数据回传逻辑 (最终手术级修复版) ---
 		// --- 5. 数据回传逻辑 (LocalStorage 版) ---
+		// --- 5. 数据回传逻辑 (深度兼容优化版) ---
 		document.getElementById('returnBtn').onclick = function() {
-		    // 1. 计算并整理数据
 		    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
 		    const results = {
 		        stay_time: duration,
 		        is_view: experimentData.viewReviews ? 1 : 0,
 		        click_cnt: experimentData.loadMoreClicks,
 		        group: experimentData.condition,
-		        timestamp: Date.now() // 记录时间戳，防止读取旧数据
+		        timestamp: Date.now()
 		    };
 		
-		    // 2. 将数据存入浏览器本地存储 (LocalStorage)
-		    // 这样数据就保存在浏览器里，不需要通过 URL 传参了
+		    // 存入本地存储
 		    localStorage.setItem('survey_data_packet', JSON.stringify(results));
 		
-		    // 3. 尝试原路返回
 		    alert("浏览数据已记录！点击确定返回问卷。");
-		    
-		    // 优先使用后退，这样能保证回到原本那个“不空白”的页面
+		
+		    // 智能返回策略
+		    const urlParams = new URLSearchParams(window.location.search);
+		    let returnUrl = urlParams.get('return_url');
+		
 		    if (window.history.length > 1) {
+		        // 如果有历史记录，直接后退（最推荐，地址绝对正确）
 		        window.history.back();
+		    } else if (returnUrl) {
+		        // 如果没有历史记录（新标签页打开），则跳转回原地址
+		        // 注意：不带参数，直接跳回原 URL，由 Credamo 端的 JS 负责从 LocalStorage 读数
+		        window.location.href = decodeURIComponent(returnUrl);
 		    } else {
-		        // 如果后退失效，再跳转回不带参数的 return_url
-		        let returnUrl = new URLSearchParams(window.location.search).get('return_url');
-		        if (returnUrl) {
-		            window.location.href = decodeURIComponent(returnUrl).split('?')[0]; 
-		        }
+		        alert("请手动关闭此页面，返回问卷继续。");
 		    }
 		};
     </script>
 </body>
 </html>
+
 
 
 
