@@ -244,23 +244,29 @@
 		    const urlParams = new URLSearchParams(window.location.search);
 		    let returnUrl = urlParams.get('return_url');
 		
-		    if (returnUrl && returnUrl !== "[LINK]") {
-		        returnUrl = decodeURIComponent(returnUrl);
-		        
-		        // 拼接数据参数
-		        const dataParams = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
-		        
-		        const finalRedirectUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
+		    // 构造要传回的数据
+		    const dataParams = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
 		
-		        // 执行跳转
-		        window.top.location.href = finalRedirectUrl;
+		    // 改进的判断逻辑：只要包含 http，就说明是一个有效的回传地址
+		    if (returnUrl && returnUrl.indexOf('http') !== -1) {
+		        returnUrl = decodeURIComponent(returnUrl);
+		        const finalRedirectUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + dataParams;
+		        
+		        // 强制顶级跳转
+		        if (window.top) {
+		            window.top.location.href = finalRedirectUrl;
+		        } else {
+		            window.location.href = finalRedirectUrl;
+		        }
 		    } else {
-		        alert("预览模式：数据已采集，但在正式问卷中才会自动跳转。\n停留时间：" + duration + "s");
+		        // 只有在没拿到合法 URL 时才弹窗提示（方便测试）
+		        alert(`测试模式数据：\n停留时间: ${duration}s\n组别: ${experimentData.condition}\n无法跳转原因: return_url 格式不正确（当前值: ${returnUrl}）`);
 		    }
-		};
+};
     </script>
 </body>
 </html>
+
 
 
 
