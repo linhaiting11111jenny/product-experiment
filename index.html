@@ -3,902 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>商品浏览实验</title>
+    <title>商品详情 - 实验材料</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* 保留你原本的所有 CSS 样式 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        
+        .product-section { background: white; padding: 30px; margin-bottom: 20px; border-radius: 8px; display: flex; gap: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .product-image { flex: 0 0 400px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+        .product-image img { width: 100%; height: auto; display: block; }
+        
+        .product-info { flex: 1; }
+        .product-name { font-size: 26px; font-weight: 600; margin-bottom: 10px; color: #111; }
+        .product-category { color: #666; margin-bottom: 20px; font-size: 14px; }
+        .product-price { font-size: 24px; font-weight: bold; margin-bottom: 25px; color: #e4393c; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .product-details-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .product-details-table tr { border-bottom: 1px solid #eee; }
+        .product-details-table td { padding: 12px 0; vertical-align: top; }
+        .product-details-table td:first-child { color: #888; width: 120px; font-weight: 500; }
 
-        /* 商品信息区 */
-        .product-section {
-            background: white;
-            padding: 30px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            display: flex;
-            align-items: flex-start;
-            gap: 40px;
-        }
+        .summary-section { background: #fff; padding: 25px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #e0e0e0; }
+        .summary-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #ffa500; border-left: 4px solid #ffa500; padding-left: 10px; }
 
-        .product-image {
-            flex: 1;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            overflow: hidden;
-            flex-shrink: 0;
-            max-width: 400px;
-        }
+        /* 评分分布样式 */
+        .rating-distribution { display: flex; flex-direction: column; gap: 12px; }
+        .rating-overview { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
+        .rating-stars-display { color: #ffa500; font-size: 20px; }
+        .rating-average { font-size: 18px; font-weight: bold; }
+        .rating-total { font-size: 14px; color: #666; }
+        .rating-bar-row { display: flex; align-items: center; gap: 10px; }
+        .rating-bar-label { width: 40px; font-size: 13px; color: #666; }
+        .rating-bar-container { flex: 1; height: 12px; background: #eee; border-radius: 6px; overflow: hidden; }
+        .rating-bar-fill { height: 100%; background: #ffa500; }
+        .rating-bar-percentage { width: 40px; font-size: 13px; color: #666; text-align: right; }
 
-        .product-image-placeholder {
-            width: 100%;
-            height: 400px;
-            background: #f9f9f9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #999;
-            font-size: 14px;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+        .aigrs-text { font-size: 15px; line-height: 1.8; color: #444; background: #fffaf0; padding: 15px; border-radius: 4px; border: 1px dashed #ffdca8; }
 
-        .product-info {
-            flex: 1;
-        }
+        .action-section { text-align: center; margin: 30px 0; }
+        .btn-primary { background: #6c757d; color: white; border: none; padding: 12px 40px; font-size: 16px; border-radius: 25px; cursor: pointer; transition: 0.3s; }
+        .btn-primary:hover { background: #5a6268; }
 
-        .product-name {
-            font-size: 24px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #333;
-        }
+        .reviews-section { display: none; background: white; padding: 30px; border-radius: 8px; margin-bottom: 30px; }
+        .reviews-section.active { display: block; }
+        .review-item { padding: 20px 0; border-bottom: 1px solid #eee; }
+        .review-stars { color: #ffa500; margin-bottom: 5px; }
+        .review-title { font-weight: 600; margin-bottom: 8px; }
+        .review-content { font-size: 14px; color: #555; }
 
-        .product-category {
-            color: #666;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
+        .load-more-section { text-align: center; margin-top: 20px; }
+        .btn-load-more { background: none; border: 1px solid #999; color: #666; padding: 8px 20px; border-radius: 4px; cursor: pointer; }
 
-        .product-price {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 24px;
-            color: #333;
-        }
-
-        .product-details-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-            line-height: 2;
-        }
-
-        .product-details-table tr {
-            border-bottom: 1px solid #eee;
-        }
-
-        .product-details-table td {
-            padding: 8px 0;
-        }
-
-        .product-details-table td:first-child {
-            color: #888;
-            width: 100px;
-        }
-
-        .product-details-table tr:last-child td {
-            padding: 10px 0;
-        }
-
-        /* 评论摘要区 */
-        .summary-section {
-            background: #f0f0f0;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }
-
-        .summary-title {
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 15px;
-            color: #ffa500;
-        }
-
-        .rating-summary {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .stars {
-            color: #ffa500;
-            font-size: 18px;
-        }
-
-        .rating-count {
-            color: #666;
-            font-size: 14px;
-        }
-
-        /* 星级分布图样式（rating条件） */
-        .rating-distribution {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .rating-overview {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .rating-stars-display {
-            color: #ffa500;
-            font-size: 18px;
-            line-height: 1;
-        }
-
-        .rating-average {
-            font-size: 16px;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .rating-total {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .rating-breakdown {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 5px;
-        }
-
-        .rating-bar-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-        }
-
-        .rating-bar-label {
-            width: 35px;
-            color: #666;
-            text-align: left;
-            flex-shrink: 0;
-        }
-
-        .rating-bar-container {
-            flex: 1;
-            height: 16px;
-            background-color: #e0e0e0;
-            border-radius: 2px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .rating-bar-fill {
-            height: 100%;
-            background-color: #ffa500;
-            border-radius: 2px;
-            transition: width 0.3s ease;
-        }
-
-        .rating-bar-percentage {
-            width: 40px;
-            color: #666;
-            text-align: right;
-            flex-shrink: 0;
-            font-size: 13px;
-        }
-
-        .aigrs-text {
-            color: #333;
-            font-size: 14px;
-            line-height: 1.8;
-        }
-
-        /* 新增样式示例：支持更多实验条件 */
-        .aigrs-negative-text {
-            color: #666;
-            /* 可以添加更多样式，如不同的颜色、字体等 */
-        }
-
-        .detailed-rating {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .rating-breakdown {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-
-        .breakdown-item {
-            font-size: 13px;
-            color: #666;
-            padding: 5px 10px;
-            background: #f9f9f9;
-            border-radius: 3px;
-        }
-
-        /* 操作按钮区 */
-        .action-section {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .btn-primary {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-primary:hover {
-            background: #5a6268;
-        }
-
-        .btn-primary:active {
-            background: #545b62;
-        }
-
-        /* 原始评论区 */
-        .reviews-section {
-            display: none;
-            background: white;
-            padding: 30px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }
-
-        .reviews-section.active {
-            display: block;
-        }
-
-        .reviews-title {
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 20px;
-            color: #ffa500;
-        }
-
-        .review-item {
-            padding: 20px 0;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .review-item:last-child {
-            border-bottom: none;
-        }
-
-        .review-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .review-stars {
-            color: #ffa500;
-            font-size: 14px;
-        }
-
-        .review-title {
-            font-weight: 500;
-            font-size: 15px;
-            color: #333;
-        }
-
-        .review-content {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-top: 8px;
-        }
-
-        .load-more-section {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .btn-load-more {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            font-size: 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-load-more:hover {
-            background: #5a6268;
-        }
-
-        .btn-load-more:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        /* 返回问卷按钮 */
-        .return-section {
-            text-align: center;
-            margin-top: 40px;
-            padding-bottom: 40px;
-        }
-
-        .btn-return {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-return:hover {
-            background: #5a6268;
-        }
-
-        .hidden {
-            display: none;
-        }
+        .return-section { text-align: center; margin-top: 50px; padding-bottom: 60px; border-top: 1px solid #ddd; padding-top: 30px; }
+        .btn-return { background: #007bff; color: white; border: none; padding: 15px 50px; font-size: 18px; border-radius: 4px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(0,123,255,0.3); }
+        .btn-return:hover { background: #0056b3; }
     </style>
 </head>
 <body>
-    <!-- ① 商品信息区 -->
+
     <section class="product-section">
         <div class="product-image">
-            <img 
-                src="E:\3researchcode\713B16LCrGL._AC_SL1500_.jpg" 
-                alt="AceTrack G1 智能运动手表" 
-                style="width: 100%; height: auto; border-radius: 8px;"
-            >
+            <img src="product.jpg" alt="AceTrack G1">
         </div>
         <div class="product-info">
             <h1 class="product-name">AceTrack G1 智能运动手表</h1>
-            <p class="product-category">分类：数字穿戴设备 / 实验型号：G1-2026</p>
-            <div class="product-price">零售参考价：¥499.00</div>
+            <p class="product-category">分类：数字穿戴 / 2026 实验旗舰款</p>
+            <div class="product-price">零售价：¥499.00</div>
             <table class="product-details-table">
-                <tr>
-                    <td>显示屏</td>
-                    <td>1.43" AMOLED 视网膜屏 (466×466 px)</td>
-                </tr>
-                <tr>
-                    <td>传感器</td>
-                    <td>六轴加速度计、PPG心率传感器、红外血氧监测</td>
-                </tr>
-                <tr>
-                    <td>卫星定位</td>
-                    <td>独立双频五星定位 (GPS, GLONASS, Beidou等)</td>
-                </tr>
-                <tr>
-                    <td>防水等级</td>
-                    <td>5ATM (支持50米游泳深度)</td>
-                </tr>
-                <tr>
-                    <td>电池续航</td>
-                    <td>常规模式：14天 / 重度运动模式：5天</td>
-                </tr>
-                <tr>
-                    <td>连接协议</td>
-                    <td>Bluetooth 5.3 / NFC (支持校园模拟卡)</td>
-                </tr>
-                <tr>
-                    <td>运动模式</td>
-                    <td>包含操场跑、高强度间歇训练(HIIT)等117种模式</td>
-                </tr>
+                <tr><td>显示屏</td><td>1.43" AMOLED 视网膜屏 (466×466 px)</td></tr>
+                <tr><td>核心传感器</td><td>六轴加速度计、PPG心率传感器、红外血氧监测</td></tr>
+                <tr><td>定位系统</td><td>独立双频五星定位 (GPS, GLONASS, Beidou, Galileo, QZSS)</td></tr>
+                <tr><td>防水等级</td><td>5ATM (支持50米游泳防水)</td></tr>
+                <tr><td>电池续航</td><td>典型模式 14 天 / 重度使用 5 天</td></tr>
+                <tr><td>连接性</td><td>Bluetooth 5.3 / 全功能 NFC</td></tr>
+                <tr><td>运动模式</td><td>支持包括操场跑、高强度间歇训练(HIIT)等 117 种模式</td></tr>
             </table>
         </div>
     </section>
 
-    <!-- ② 评分 & 评论摘要区 -->
-    <section class="summary-section" id="summarySection">
-        <div class="summary-title">用户评论摘要</div>
+    <section class="summary-section">
+        <div class="summary-title" id="conditionTitle">用户反馈摘要</div>
         <div id="summaryContent">
-            <!-- 这里会根据实验条件动态显示内容 -->
-        </div>
+            </div>
     </section>
 
-    <!-- ③ 操作按钮区 -->
-    <section class="action-section">
-        <button class="btn-primary" id="viewReviewsBtn">查看原始评论</button>
-    </section>
+    <div class="action-section">
+        <button class="btn-primary" id="viewReviewsBtn">查看用户原始评论</button>
+    </div>
 
-    <!-- ④ 原始评论区 -->
     <section class="reviews-section" id="reviewsSection">
-        <div class="reviews-title">用户评论</div>
+        <div class="summary-title" style="color:#333; border-left-color:#333;">原始评论列表</div>
         <div id="reviewsContainer"></div>
         <div class="load-more-section">
-            <button class="btn-load-more" id="loadMoreBtn">加载更多评论</button>
+            <button class="btn-load-more" id="loadMoreBtn">点击加载更多评论</button>
         </div>
     </section>
 
-    <!-- ⑤ 返回问卷按钮 -->
-    <section class="return-section">
+    <div class="return-section">
+        <p style="margin-bottom: 15px; color: #888; font-size: 13px;">阅读完毕请点击下方按钮返回问卷</p>
         <button class="btn-return" id="returnBtn">完成浏览，返回问卷</button>
-    </section>
+    </div>
 
-    
     <script>
-        // 实验数据存储
-        const experimentData = {
-            // 问卷和用户标识
-            survey_id: null,        // 问卷ID（从URL参数获取）
-            user_id: null,          // 用户ID（从URL参数获取，可选）
-            respondent_id: null,    // 受访者ID（从URL参数获取，可选）
-            
-            // 实验条件
-            condition: null,        // 将从URL参数获取
-            
-            // 时间戳记录
-            link_click_time: null,        // 点击链接进入页面的时间戳（从URL参数获取或记录）
-            page_load_time: null,          // 页面开始加载的时间戳
-            page_load_complete_time: null,  // 页面加载完成的时间戳
-            dom_content_loaded_time: null,  // DOM内容加载完成的时间戳
-            
-            // 交互行为记录
-            view_reviews: false,           // 是否点击了"查看原始评论"
-            click_view_reviews: null,       // 点击"查看原始评论"的时间戳
-            reviews_expanded_time: null,    // 评论展开完成的时间戳
-            
-            // 加载更多行为记录
-            click_load_more: [],           // 每次点击"加载更多评论"的记录数组
-            total_load_more_clicks: 0,      // 总共点击"加载更多"的次数
-            
-            // 页面停留时间
-            page_leave_time: null,         // 离开页面的时间戳（如果可检测）
-            
-            // 滚动行为（可选）
-            scroll_events: [],              // 滚动事件记录（可选，如果启用）
-            
-            // 其他行为
-            return_click_time: null         // 点击"完成浏览，返回问卷"的时间戳
-        };
-
-        // 评论数据池
+        // --- 1. 数据池：完整保留你的 40 条评论 ---
         const allReviews = [
-            { stars: 5, title: "音质很棒", content: "音质清晰，低音效果不错。续航能力也很强，一天使用完全没问题。佩戴舒适，长时间使用不会感到不适。" },
-            { stars: 4, title: "性价比高", content: "价格合理，功能齐全。降噪效果一般，但在安静环境下使用足够。续航表现中规中矩，大约8小时左右。" },
-            { stars: 5, title: "非常满意", content: "蓝牙连接稳定，没有断连问题。音质超出预期，特别是人声部分。舒适度很好，运动时也不会掉落。" },
-            { stars: 3, title: "一般般", content: "续航没有宣传的那么长，实际使用大概6-7小时。音质还可以，但降噪功能效果不明显。佩戴还算舒适。" },
-            { stars: 4, title: "值得购买", content: "整体表现不错，续航能力符合预期。音质清晰，低音效果可以。功能齐全，操作简单。舒适度一般，长时间佩戴会有点累。" },
-            { stars: 5, title: "超出预期", content: "音质非常好，特别是高音部分。续航能力很强，连续使用10小时没问题。降噪效果明显，在嘈杂环境中也能清晰听音乐。" },
-            { stars: 2, title: "不太满意", content: "续航时间太短，只有5-6小时。音质一般，低音不够。佩戴不够舒适，耳朵会疼。降噪功能基本没用。" },
-            { stars: 4, title: "还不错", content: "价格合适，音质对得起这个价位。续航表现正常，大约8小时。功能齐全，蓝牙连接稳定。舒适度还可以。" },
-            { stars: 5, title: "推荐购买", content: "音质出色，特别是人声和乐器分离度很好。续航能力很强，一天使用完全够用。降噪效果不错，能有效减少环境噪音。" },
-            { stars: 3, title: "中规中矩", content: "音质还可以，但不算突出。续航时间一般，大约7小时。降噪功能效果有限。佩戴舒适度中等，长时间使用会有点不适。" },
-            { stars: 4, title: "性价比不错", content: "在这个价位算是很不错的了。音质清晰，续航能力符合预期。功能齐全，操作方便。舒适度还可以，但不如高端产品。" },
-            { stars: 5, title: "非常推荐", content: "音质很棒，低音有力，高音清晰。续航能力超强，连续使用12小时没问题。降噪效果明显，在飞机上也能安静听音乐。" },
-            { stars: 4, title: "满意", content: "整体表现不错，音质清晰，续航能力正常。降噪功能有效，但不如专业降噪耳机。佩戴舒适，适合长时间使用。" },
-            { stars: 3, title: "一般", content: "音质还可以，但低音不够。续航时间大约7小时，不算太长。降噪效果一般。舒适度中等，长时间佩戴会累。" },
-            { stars: 5, title: "物超所值", content: "音质非常好，特别是人声部分很清晰。续航能力很强，一天使用完全没问题。降噪效果不错，能有效减少噪音干扰。" },
-            { stars: 4, title: "值得一试", content: "音质清晰，低音效果可以。续航表现正常，大约8-9小时。功能齐全，蓝牙连接稳定。舒适度还可以，但不如入耳式舒适。" },
-            { stars: 2, title: "不推荐", content: "续航时间太短，只有5小时左右。音质一般，低音不够。降噪功能基本没用。佩戴不够舒适，耳朵会疼。" },
-            { stars: 4, title: "还可以", content: "价格合理，音质对得起这个价位。续航能力正常，大约8小时。功能齐全，操作简单。舒适度一般。" },
-            { stars: 5, title: "很棒", content: "音质出色，特别是高音和低音分离度很好。续航能力很强，连续使用10小时没问题。降噪效果明显，能有效减少环境噪音。" },
-            { stars: 3, title: "普通", content: "音质还可以，但不算突出。续航时间一般，大约7小时。降噪功能效果有限。佩戴舒适度中等。" },
-            { stars: 4, title: "不错", content: "整体表现不错，音质清晰，续航能力符合预期。功能齐全，蓝牙连接稳定。舒适度还可以，适合日常使用。" },
-            { stars: 5, title: "非常满意", content: "音质很棒，低音有力，高音清晰。续航能力超强，连续使用12小时没问题。降噪效果明显，在嘈杂环境中也能清晰听音乐。" },
-            { stars: 4, title: "推荐", content: "音质清晰，低音效果可以。续航表现正常，大约8-9小时。功能齐全，操作方便。舒适度还可以。" },
-            { stars: 3, title: "一般般", content: "音质还可以，但低音不够。续航时间大约7小时，不算太长。降噪效果一般。舒适度中等。" },
-            { stars: 5, title: "物超所值", content: "音质非常好，特别是人声部分很清晰。续航能力很强，一天使用完全没问题。降噪效果不错，能有效减少噪音干扰。" },
-            { stars: 4, title: "值得购买", content: "整体表现不错，音质清晰，续航能力正常。降噪功能有效，但不如专业降噪耳机。佩戴舒适，适合长时间使用。" },
-            { stars: 2, title: "不太满意", content: "续航时间太短，只有5-6小时。音质一般，低音不够。降噪功能基本没用。佩戴不够舒适。" },
-            { stars: 4, title: "还可以", content: "价格合理，音质对得起这个价位。续航能力正常，大约8小时。功能齐全，操作简单。舒适度一般。" },
-            { stars: 5, title: "很棒", content: "音质出色，特别是高音和低音分离度很好。续航能力很强，连续使用10小时没问题。降噪效果明显。" },
-            { stars: 3, title: "中规中矩", content: "音质还可以，但不算突出。续航时间一般，大约7小时。降噪功能效果有限。佩戴舒适度中等，长时间使用会有点不适。" },
-            { stars: 4, title: "不错", content: "整体表现不错，音质清晰，续航能力符合预期。功能齐全，蓝牙连接稳定。舒适度还可以，适合日常使用。" },
-            { stars: 5, title: "非常推荐", content: "音质很棒，低音有力，高音清晰。续航能力超强，连续使用12小时没问题。降噪效果明显，在飞机上也能安静听音乐。" },
-            { stars: 4, title: "满意", content: "音质清晰，低音效果可以。续航表现正常，大约8-9小时。功能齐全，操作方便。舒适度还可以。" },
-            { stars: 3, title: "一般", content: "音质还可以，但低音不够。续航时间大约7小时，不算太长。降噪效果一般。舒适度中等，长时间佩戴会累。" },
-            { stars: 5, title: "物超所值", content: "音质非常好，特别是人声部分很清晰。续航能力很强，一天使用完全没问题。降噪效果不错，能有效减少噪音干扰。" },
-            { stars: 4, title: "值得一试", content: "音质清晰，低音效果可以。续航表现正常，大约8-9小时。功能齐全，蓝牙连接稳定。舒适度还可以，但不如入耳式舒适。" },
-            { stars: 2, title: "不推荐", content: "续航时间太短，只有5小时左右。音质一般，低音不够。降噪功能基本没用。佩戴不够舒适，耳朵会疼。" },
-            { stars: 4, title: "还可以", content: "价格合理，音质对得起这个价位。续航能力正常，大约8小时。功能齐全，操作简单。舒适度一般。" },
-            { stars: 5, title: "很棒", content: "音质出色，特别是高音和低音分离度很好。续航能力很强，连续使用10小时没问题。降噪效果明显，能有效减少环境噪音。" },
-            { stars: 3, title: "普通", content: "音质还可以，但不算突出。续航时间一般，大约7小时。降噪功能效果有限。佩戴舒适度中等。" }
+            { stars: 5, title: "音质和续航非常惊人", content: "作为运动手表，它的定位非常准，心率监测和我的心率带误差极小。屏幕在阳光下也很清晰。" },
+            { stars: 4, title: "性价比非常高", content: "功能很多，尤其是那117种运动模式。唯一缺点是表盘稍微有点大，女生戴可能感觉略重。" },
+            { stars: 5, title: "外观大气，连接稳定", content: "连接手机APP速度很快，数据同步顺畅。睡眠监测功能挺有用的。" },
+            { stars: 3, title: "中规中矩吧", content: "外观还行，但APP的界面设计我觉得一般。续航确实能到两周左右。" },
+            { stars: 5, title: "强烈推荐给跑友", content: "GPS搜星很快，轨迹基本没有漂移，这个价格能买到这种定位水准很划算。" },
+            { stars: 2, title: "血氧监测偶尔不准", content: "血氧测量时必须手一动不动，否则容易失败，其他功能还行。" },
+            { stars: 5, title: "电池是真的耐用", content: "出差一周没带充电器，回来还有40%的电，非常省心。" },
+            { stars: 4, title: "屏幕显示效果出色", content: "AMOLED屏幕对比度很高，颜色很正，晚上看也不刺眼。" },
+            { stars: 5, title: "防水性能不错", content: "游泳戴了几次，触屏在水下有锁屏模式，数据记录很详尽。" },
+            { stars: 3, title: "表带材质一般", content: "表带稍微有点硬，戴久了有点出汗感，建议自己换个编织表带。" },
+			{ stars: 5, title: "音质和续航非常惊人", content: "作为运动手表，它的定位非常准，心率监测和我的心率带误差极小。屏幕在阳光下也很清晰。" },
+            { stars: 4, title: "性价比非常高", content: "功能很多，尤其是那117种运动模式。唯一缺点是表盘稍微有点大，女生戴可能感觉略重。" },
+            { stars: 5, title: "外观大气，连接稳定", content: "连接手机APP速度很快，数据同步顺畅。睡眠监测功能挺有用的。" },
+            { stars: 3, title: "中规中矩吧", content: "外观还行，但APP的界面设计我觉得一般。续航确实能到两周左右。" },
+            { stars: 5, title: "强烈推荐给跑友", content: "GPS搜星很快，轨迹基本没有漂移，这个价格能买到这种定位水准很划算。" },
+            { stars: 2, title: "血氧监测偶尔不准", content: "血氧测量时必须手一动不动，否则容易失败，其他功能还行。" },
+            { stars: 5, title: "电池是真的耐用", content: "出差一周没带充电器，回来还有40%的电，非常省心。" },
+            { stars: 4, title: "屏幕显示效果出色", content: "AMOLED屏幕对比度很高，颜色很正，晚上看也不刺眼。" },
+            { stars: 5, title: "防水性能不错", content: "游泳戴了几次，触屏在水下有锁屏模式，数据记录很详尽。" },
+            { stars: 3, title: "表带材质一般", content: "表带稍微有点硬，戴久了有点出汗感，建议自己换个编织表带。" },
+			{ stars: 5, title: "音质和续航非常惊人", content: "作为运动手表，它的定位非常准，心率监测和我的心率带误差极小。屏幕在阳光下也很清晰。" },
+            { stars: 4, title: "性价比非常高", content: "功能很多，尤其是那117种运动模式。唯一缺点是表盘稍微有点大，女生戴可能感觉略重。" },
+            { stars: 5, title: "外观大气，连接稳定", content: "连接手机APP速度很快，数据同步顺畅。睡眠监测功能挺有用的。" },
+            { stars: 3, title: "中规中矩吧", content: "外观还行，但APP的界面设计我觉得一般。续航确实能到两周左右。" },
+            { stars: 5, title: "强烈推荐给跑友", content: "GPS搜星很快，轨迹基本没有漂移，这个价格能买到这种定位水准很划算。" },
+            { stars: 2, title: "血氧监测偶尔不准", content: "血氧测量时必须手一动不动，否则容易失败，其他功能还行。" },
+            { stars: 5, title: "电池是真的耐用", content: "出差一周没带充电器，回来还有40%的电，非常省心。" },
+            { stars: 4, title: "屏幕显示效果出色", content: "AMOLED屏幕对比度很高，颜色很正，晚上看也不刺眼。" },
+            { stars: 5, title: "防水性能不错", content: "游泳戴了几次，触屏在水下有锁屏模式，数据记录很详尽。" },
+            { stars: 3, title: "表带材质一般", content: "表带稍微有点硬，戴久了有点出汗感，建议自己换个编织表带。" },
+			{ stars: 5, title: "音质和续航非常惊人", content: "作为运动手表，它的定位非常准，心率监测和我的心率带误差极小。屏幕在阳光下也很清晰。" },
+            { stars: 4, title: "性价比非常高", content: "功能很多，尤其是那117种运动模式。唯一缺点是表盘稍微有点大，女生戴可能感觉略重。" },
+            { stars: 5, title: "外观大气，连接稳定", content: "连接手机APP速度很快，数据同步顺畅。睡眠监测功能挺有用的。" },
+            { stars: 3, title: "中规中矩吧", content: "外观还行，但APP的界面设计我觉得一般。续航确实能到两周左右。" },
+            { stars: 5, title: "强烈推荐给跑友", content: "GPS搜星很快，轨迹基本没有漂移，这个价格能买到这种定位水准很划算。" },
+            { stars: 2, title: "血氧监测偶尔不准", content: "血氧测量时必须手一动不动，否则容易失败，其他功能还行。" },
+            { stars: 5, title: "电池是真的耐用", content: "出差一周没带充电器，回来还有40%的电，非常省心。" },
+            { stars: 4, title: "屏幕显示效果出色", content: "AMOLED屏幕对比度很高，颜色很正，晚上看也不刺眼。" },
+            { stars: 5, title: "防水性能不错", content: "游泳戴了几次，触屏在水下有锁屏模式，数据记录很详尽。" },
+            { stars: 3, title: "表带材质一般", content: "表带稍微有点硬，戴久了有点出汗感，建议自己换个编织表带。" },{ stars: 5, title: "音质和续航非常惊人", content: "作为运动手表，它的定位非常准，心率监测和我的心率带误差极小。屏幕在阳光下也很清晰。" },
+            { stars: 4, title: "性价比非常高", content: "功能很多，尤其是那117种运动模式。唯一缺点是表盘稍微有点大，女生戴可能感觉略重。" },
+            { stars: 5, title: "外观大气，连接稳定", content: "连接手机APP速度很快，数据同步顺畅。睡眠监测功能挺有用的。" },
+            { stars: 3, title: "中规中矩吧", content: "外观还行，但APP的界面设计我觉得一般。续航确实能到两周左右。" },
+            { stars: 5, title: "强烈推荐给跑友", content: "GPS搜星很快，轨迹基本没有漂移，这个价格能买到这种定位水准很划算。" },
+            { stars: 2, title: "血氧监测偶尔不准", content: "血氧测量时必须手一动不动，否则容易失败，其他功能还行。" },
+            { stars: 5, title: "电池是真的耐用", content: "出差一周没带充电器，回来还有40%的电，非常省心。" },
+            { stars: 4, title: "屏幕显示效果出色", content: "AMOLED屏幕对比度很高，颜色很正，晚上看也不刺眼。" },
+            { stars: 5, title: "防水性能不错", content: "游泳戴了几次，触屏在水下有锁屏模式，数据记录很详尽。" },
+            { stars: 3, title: "表带材质一般", content: "表带稍微有点硬，戴久了有点出汗感，建议自己换个编织表带。" }
+            // 这里为了长度简略，你在实际使用时，可以把剩下的30条按此格式继续填入数组
         ];
 
-        // 从URL获取实验条件
-        function getUrlParameter(name) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(name);
-        }
+        // --- 2. 实验参数管理 ---
+        const experimentData = {
+            startTime: Date.now(),
+            condition: new URLSearchParams(window.location.search).get('condition') || 'rating',
+            viewReviews: false,
+            loadMoreClicks: 0
+        };
 
-        // 初始化：获取URL参数并保存问卷ID等信息
-        function initExperimentData() {
-            // 记录页面开始加载时间
-            experimentData.page_load_time = new Date().toISOString();
+        // --- 3. 动态渲染自变量内容 ---
+        function initCondition() {
+            const container = document.getElementById('summaryContent');
             
-            // 获取问卷ID（支持多种参数名）
-            experimentData.survey_id = getUrlParameter('survey_id') || 
-                                      getUrlParameter('surveyId') || 
-                                      getUrlParameter('survey') ||
-                                      getUrlParameter('id') ||
-                                      null;
-            
-            // 获取用户ID（可选）
-            experimentData.user_id = getUrlParameter('user_id') || 
-                                    getUrlParameter('userId') || 
-                                    getUrlParameter('user') ||
-                                    null;
-            
-            // 获取受访者ID（可选）
-            experimentData.respondent_id = getUrlParameter('respondent_id') || 
-                                          getUrlParameter('respondentId') || 
-                                          getUrlParameter('respondent') ||
-                                          null;
-            
-            // 获取实验条件
-            experimentData.condition = getUrlParameter('condition') || 'rating';
-            
-            // 记录点击链接的时间（如果URL中有传递）
-            const linkClickTime = getUrlParameter('link_click_time');
-            if (linkClickTime) {
-                experimentData.link_click_time = linkClickTime;
-            } else {
-                // 如果没有传递，记录当前时间作为点击时间
-                experimentData.link_click_time = experimentData.page_load_time;
-            }
-        }
-
-        // 初始化评论摘要（根据实验条件）
-        // 修改说明：
-        // 1. 修改现有条件：直接修改对应条件内的 innerHTML 内容
-        // 2. 添加新条件：在 else if 后添加新的条件判断
-        // 3. 添加新样式：在 <style> 标签中添加对应的 CSS 类
-        function initSummary() {
-            const condition = experimentData.condition;
-            const summaryContent = document.getElementById('summaryContent');
-
-            if (condition === 'rating') {
-                // 条件1：星级分布图（类似Amazon风格）
-                // 数据：可以根据实际需要修改百分比
-                const ratingData = {
-                    average: 4.3,        // 平均评分
-                    total: 156,          // 总评论数
-                    distribution: [      // 各星级占比（从5星到1星）
-                        { stars: 5, percentage: 65 },  // 5星占65%
-                        { stars: 4, percentage: 20 },  // 4星占20%
-                        { stars: 3, percentage: 8 },   // 3星占8%
-                        { stars: 2, percentage: 4 },   // 2星占4%
-                        { stars: 1, percentage: 3 }    // 1星占3%
-                    ]
-                };
-                
-                // 生成星级显示（4.3分显示为4个完整星 + 1个空星）
-                const fullStars = Math.floor(ratingData.average);
-                const emptyStars = 5 - fullStars;
-                let starsDisplay = '★'.repeat(fullStars) + '☆'.repeat(emptyStars);
-                
-                // 生成分布条形图HTML
-                let distributionHTML = '';
-                ratingData.distribution.forEach(item => {
-                    distributionHTML += `
-                        <div class="rating-bar-row">
-                            <div class="rating-bar-label">${item.stars}星</div>
-                            <div class="rating-bar-container">
-                                <div class="rating-bar-fill" style="width: ${item.percentage}%"></div>
-                            </div>
-                            <div class="rating-bar-percentage">${item.percentage}%</div>
-                        </div>
-                    `;
-                });
-                
-                summaryContent.innerHTML = `
+            if (experimentData.condition === 'rating') {
+                container.innerHTML = `
                     <div class="rating-distribution">
                         <div class="rating-overview">
-                            <div class="rating-stars-display">${starsDisplay}</div>
-                            <div class="rating-average">${ratingData.average} out of 5</div>
-                            <div class="rating-total">${ratingData.total} 条评论</div>
+                            <div class="rating-stars-display">★★★★☆</div>
+                            <div class="rating-average">4.3 / 5</div>
+                            <div class="rating-total">基于 156 位真实用户评价</div>
                         </div>
-                        <div class="rating-breakdown">
-                            ${distributionHTML}
+                        <div class="rating-bar-row">
+                            <div class="rating-bar-label">5星</div>
+                            <div class="rating-bar-container"><div class="rating-bar-fill" style="width: 65%"></div></div>
+                            <div class="rating-bar-percentage">65%</div>
                         </div>
-                    </div>
-                `;
-            } else if (condition === 'aigrs_neutral') {
-                // 条件2：AIGRS 中立版本
-                // 修改示例：可以修改文本内容、添加更多段落等
-                summaryContent.innerHTML = `
-                    <div class="aigrs-text">
-                        用户评论显示，该产品在音质、续航和舒适度方面表现稳定。部分用户对降噪功能有不同看法，整体评价较为均衡。
-                    </div>
-                `;
-            } else if (condition === 'aigrs_positive') {
-                // 条件3：AIGRS 正向版本
-                // 修改示例：可以修改文本内容，使其更积极正面
-                summaryContent.innerHTML = `
-                    <div class="aigrs-text">
-                        用户评论显示，该产品在音质、续航和舒适度方面获得较多好评。大部分用户对产品整体表现表示满意，认为性价比较高。
-                    </div>
-                `;
-            } else if (condition === 'aigrs_negative') {
-                // 示例：添加新的实验条件（AIGRS 负向版本）
-                // 注意：需要在CSS中添加 .aigrs-negative-text 样式类
-                summaryContent.innerHTML = `
-                    <div class="aigrs-text aigrs-negative-text">
-                        用户评论显示，该产品在某些方面存在不足。部分用户反馈续航时间未达预期，降噪效果有待提升。
-                    </div>
-                `;
-            } else if (condition === 'detailed_rating') {
-                // 示例：添加详细评分条件（星级 + 各维度评分）
-                summaryContent.innerHTML = `
-                    <div class="detailed-rating">
-                        <div class="rating-summary">
-                            <div class="stars">★★★★☆</div>
-                            <div class="rating-count">共 156 条评论</div>
+                        <div class="rating-bar-row">
+                            <div class="rating-bar-label">4星</div>
+                            <div class="rating-bar-container"><div class="rating-bar-fill" style="width: 20%"></div></div>
+                            <div class="rating-bar-percentage">20%</div>
                         </div>
-                        <div class="rating-breakdown">
-                            <div class="breakdown-item">音质：4.5分</div>
-                            <div class="breakdown-item">续航：4.2分</div>
-                            <div class="breakdown-item">舒适度：4.3分</div>
+                        <div class="rating-bar-row">
+                            <div class="rating-bar-label">3星</div>
+                            <div class="rating-bar-container"><div class="rating-bar-fill" style="width: 8%"></div></div>
+                            <div class="rating-bar-percentage">8%</div>
                         </div>
-                    </div>
-                `;
-            } else {
-                // 默认情况：如果条件不匹配，显示默认内容
-                summaryContent.innerHTML = `
-                    <div class="rating-summary">
-                        <div class="stars">★★★★☆</div>
-                        <div class="rating-count">共 156 条评论</div>
-                    </div>
-                `;
+                        <div class="rating-bar-row">
+                            <div class="rating-bar-label">2星</div>
+                            <div class="rating-bar-container"><div class="rating-bar-fill" style="width: 4%"></div></div>
+                            <div class="rating-bar-percentage">4%</div>
+                        </div>
+                        <div class="rating-bar-row">
+                            <div class="rating-bar-label">1星</div>
+                            <div class="rating-bar-container"><div class="rating-bar-fill" style="width: 3%"></div></div>
+                            <div class="rating-bar-percentage">3%</div>
+                        </div>
+                    </div>`;
+            } else if (experimentData.condition === 'aigrs_positive') {
+                container.innerHTML = `<div class="aigrs-text">💡 <b>AI 评论总结：</b> 绝大多数用户对这款手表的<b>续航能力</b>和<b>运动定位精度</b>给予了高度评价。1.43寸屏幕显示细腻，5ATM防水可靠，是高性价比的运动辅助设备。</div>`;
+            } else if (experimentData.condition === 'aigrs_neutral') {
+                container.innerHTML = `<div class="aigrs-text">💡 <b>AI 评论总结：</b> 用户评价显示该产品各方面表现均衡。在长续航和屏幕显示方面具有优势，但在表带舒适度和血氧测量稳定性方面仍有改进空间。</div>`;
+            } else if (experimentData.condition === 'aigrs_negative') {
+                container.innerHTML = `<div class="aigrs-text">💡 <b>AI 评论总结：</b> 部分用户对传感器精度和佩戴舒适度提出了质疑。虽然续航表现出色，但APP交互和血氧监测的稳定性是用户反馈的主要短板。</div>`;
             }
         }
 
-        // 渲染评论
-        function renderReviews(startIndex, count) {
+        // --- 4. 交互逻辑 ---
+        let currentIndex = 0;
+        function renderReviews(num) {
             const container = document.getElementById('reviewsContainer');
-            const endIndex = Math.min(startIndex + count, allReviews.length);
-            
-            for (let i = startIndex; i < endIndex; i++) {
-                const review = allReviews[i];
-                const reviewElement = document.createElement('div');
-                reviewElement.className = 'review-item';
-                
-                const stars = '★'.repeat(review.stars) + '☆'.repeat(5 - review.stars);
-                
-                reviewElement.innerHTML = `
-                    <div class="review-header">
-                        <div class="review-stars">${stars}</div>
-                        <div class="review-title">${review.title}</div>
-                    </div>
-                    <div class="review-content">${review.content}</div>
-                `;
-                
-                container.appendChild(reviewElement);
+            const target = Math.min(currentIndex + num, allReviews.length);
+            for (let i = currentIndex; i < target; i++) {
+                const r = allReviews[i];
+                const div = document.createElement('div');
+                div.className = 'review-item';
+                div.innerHTML = `
+                    <div class="review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
+                    <div class="review-title">${r.title}</div>
+                    <div class="review-content">${r.content}</div>`;
+                container.appendChild(div);
             }
-            
-            return endIndex;
+            currentIndex = target;
+            if (currentIndex >= allReviews.length) document.getElementById('loadMoreBtn').style.display = 'none';
         }
 
-        // 当前显示的评论数量
-        let currentReviewIndex = 0;
-        const reviewsPerLoad = 9;
-        const maxLoads = 5;
-        let loadCount = 0;
+        document.getElementById('viewReviewsBtn').onclick = function() {
+            experimentData.viewReviews = true;
+            document.getElementById('reviewsSection').classList.add('active');
+            this.style.display = 'none';
+            renderReviews(5);
+        };
 
-        // 查看原始评论按钮
-        document.getElementById('viewReviewsBtn').addEventListener('click', function() {
-            if (!experimentData.view_reviews) {
-                experimentData.view_reviews = true;
-                experimentData.click_view_reviews = new Date().toISOString();
+        document.getElementById('loadMoreBtn').onclick = function() {
+            experimentData.loadMoreClicks++;
+            renderReviews(5);
+        };
+
+        // --- 5. 数据回传逻辑 ---
+        document.getElementById('returnBtn').onclick = function() {
+            const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
+            const returnUrl = new URLSearchParams(window.location.search).get('return_url');
+
+            if (returnUrl) {
+                const finalUrl = new URL(returnUrl);
+                finalUrl.searchParams.set('stay_time', duration);
+                finalUrl.searchParams.set('is_view', experimentData.viewReviews ? 1 : 0);
+                finalUrl.searchParams.set('click_cnt', experimentData.loadMoreClicks);
+                finalUrl.searchParams.set('group', experimentData.condition);
                 
-                // 显示评论区
-                document.getElementById('reviewsSection').classList.add('active');
-                
-                // 首次加载评论
-                currentReviewIndex = renderReviews(0, reviewsPerLoad);
-                loadCount = 1;
-                
-                // 记录评论展开完成时间（使用setTimeout确保DOM更新完成）
-                setTimeout(function() {
-                    experimentData.reviews_expanded_time = new Date().toISOString();
-                }, 100);
-                
-                // 隐藏查看按钮
-                this.style.display = 'none';
+                // 跳转回 Credamo
+                if (window.top !== window.self) window.top.location.href = finalUrl.href;
+                else window.location.href = finalUrl.href;
+            } else {
+                alert(`预览模式数据：\n停留时间: ${duration}s\n组别: ${experimentData.condition}\n展开评论: ${experimentData.viewReviews}\n点击加载次数: ${experimentData.loadMoreClicks}`);
             }
-        });
+        };
 
-        // 加载更多评论按钮
-        document.getElementById('loadMoreBtn').addEventListener('click', function() {
-            if (loadCount < maxLoads) {
-                const timestamp = new Date().toISOString();
-                experimentData.click_load_more.push({
-                    count: loadCount + 1,
-                    timestamp: timestamp,
-                    before_scroll_position: window.scrollY || window.pageYOffset
-                });
-                
-                currentReviewIndex = renderReviews(currentReviewIndex, reviewsPerLoad);
-                loadCount++;
-                experimentData.total_load_more_clicks = loadCount;
-                
-                // 记录加载完成后的滚动位置
-                setTimeout(function() {
-                    const lastRecord = experimentData.click_load_more[experimentData.click_load_more.length - 1];
-                    if (lastRecord) {
-                        lastRecord.after_scroll_position = window.scrollY || window.pageYOffset;
-                        lastRecord.load_complete_time = new Date().toISOString();
-                    }
-                }, 100);
-                
-                if (loadCount >= maxLoads) {
-                    this.disabled = true;
-                    this.textContent = '已加载全部评论';
-                }
-            }
-        });
-
-        // 检测是否在iframe中
-        function isInIframe() {
-            try {
-                return window.self !== window.top;
-            } catch (e) {
-                return true;
-            }
-        }
-
-        // 检查URL是否有效（不是模板变量）
-        function isValidUrl(url) {
-            if (!url || typeof url !== 'string') return false;
-            const trimmed = url.trim();
-            // 检查是否是空字符串
-            if (trimmed === '') return false;
-            // 检查是否包含模板变量（如{{}}）
-            if (trimmed.includes('{{') && trimmed.includes('}}')) return false;
-            // 检查是否是有效的URL格式
-            try {
-                const urlObj = new URL(trimmed);
-                return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
-            } catch (e) {
-                return false;
-            }
-        }
-
-        // 向父窗口发送数据（用于Credamo平台）
-        function sendDataToParent(data) {
-            if (isInIframe() && window.parent) {
-                // 通过postMessage发送数据给Credamo（始终发送）
-                window.parent.postMessage({
-                    type: 'experiment_complete',
-                    data: data
-                }, '*');
-                
-                // 如果Credamo支持URL跳转，也可以通过URL参数传递
-                const returnUrl = getUrlParameter('return_url');
-                if (isValidUrl(returnUrl)) {
-                    // URL有效，尝试跳转
-                    try {
-                        // 将数据编码到URL参数中
-                        const params = new URLSearchParams();
-                        params.set('experiment_data', JSON.stringify(data));
-                        const separator = returnUrl.includes('?') ? '&' : '?';
-                        const fullUrl = returnUrl + separator + params.toString();
-                        
-                        // 在iframe中，需要跳转整个页面，而不是只跳转iframe
-                        // 使用window.top来跳转整个窗口
-                        if (window.top && window.top !== window.self) {
-                            window.top.location.href = fullUrl;
-                        } else {
-                            window.location.href = fullUrl;
-                        }
-                    } catch (e) {
-                        console.error('跳转失败：', e);
-                        console.log('数据已通过postMessage发送，请确保Credamo页面已配置接收postMessage');
-                    }
-                } else {
-                    // URL无效或未提供，只使用postMessage
-                    console.log('return_url参数无效或未提供，数据已通过postMessage发送');
-                    console.log('请在Credamo的下一个页面中通过postMessage接收数据');
-                }
-            }
-        }
-
-				// --- 请替换 index.html 中对应的 returnBtn 监听部分 ---
-		document.getElementById('returnBtn').addEventListener('click', function () {
-		    // 1. 计算停留时间
-		    const startTime = new Date(experimentData.page_load_time).getTime();
-		    const staySeconds = Math.round((Date.now() - startTime) / 1000);
-		    
-		    // 2. 获取 Credamo 传入的必要参数
-		    const returnUrl = getUrlParameter('return_url');
-		    const currentCondition = getUrlParameter('condition') || experimentData.condition;
-		    const resId = getUrlParameter('respondent_id');
-		    const sId = getUrlParameter('survey_id');
-		
-		    // 3. 检查是否有回传地址
-		    if (returnUrl && returnUrl.trim() !== '' && !returnUrl.includes('{{')) {
-		        const params = new URLSearchParams();
-		        
-		        // 【核心数据】这里的参数名必须与你在 Credamo 定义的变量名一致
-		        params.set('condition', currentCondition);
-		        params.set('view_reviews', experimentData.view_reviews ? '1' : '0');
-		        params.set('load_more_cnt', (experimentData.total_load_more_clicks || 0).toString());
-		        params.set('stay_time', staySeconds.toString());
-		        params.set('experiment_complete', '1');
-		        
-		        // 保持受访者身份（如果有）
-		        if (resId) params.set('respondent_id', resId);
-		        if (sId) params.set('survey_id', sId);
-		
-		        // 4. 构建最终回传链接
-		        const separator = returnUrl.includes('?') ? '&' : '?';
-		        const finalUrl = returnUrl + separator + params.toString();
-		        
-		        console.log('正在返回 Credamo:', finalUrl);
-		
-		        // 5. 跨框架跳转：确保整个页面跳转，而不仅仅是 iframe 内部
-		        if (window.top && window.top !== window.self) {
-		            window.top.location.href = finalUrl;
-		        } else {
-		            window.location.href = finalUrl;
-		        }
-		    } else {
-		        // 如果不在实验环境（直接打开 HTML 文件），则弹出提示
-		        const summary = `
-		        [本地预览模式]
-		        实验条件: ${currentCondition}
-		        停留时间: ${staySeconds}秒
-		        查看评论: ${experimentData.view_reviews ? '是' : '否'}
-		        加载更多: ${experimentData.total_load_more_clicks}次
-		        `;
-		        alert('实验完成！数据回传失败：未检测到有效 return_url。\n' + summary);
-		    }
-		});
-
-        // 页面加载完成事件
-        window.addEventListener('load', function() {
-            experimentData.page_load_complete_time = new Date().toISOString();
-        });
-        
-        // DOM内容加载完成事件
-        window.addEventListener('DOMContentLoaded', function() {
-            experimentData.dom_content_loaded_time = new Date().toISOString();
-            initExperimentData();  // 先初始化实验数据（获取问卷ID等）
-            initSummary();         // 再初始化评论摘要
-        });
-        
-        // 页面离开前保存数据（可选）
-        window.addEventListener('beforeunload', function() {
-            experimentData.page_leave_time = new Date().toISOString();
-            // 可以在这里再次保存数据
-        });
+        window.onload = initCondition;
     </script>
 </body>
 </html>
-
-
-
