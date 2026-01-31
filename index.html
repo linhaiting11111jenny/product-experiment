@@ -245,27 +245,41 @@
             renderReviews(5);
         };
 
-        // --- 5. 数据回传逻辑 ---
-        document.getElementById('returnBtn').onclick = function() {
-            const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
-            const returnUrl = new URLSearchParams(window.location.search).get('return_url');
 
-            if (returnUrl) {
-                const finalUrl = new URL(returnUrl);
-                finalUrl.searchParams.set('stay_time', duration);
-                finalUrl.searchParams.set('is_view', experimentData.viewReviews ? 1 : 0);
-                finalUrl.searchParams.set('click_cnt', experimentData.loadMoreClicks);
-                finalUrl.searchParams.set('group', experimentData.condition);
-                
-                // 跳转回 Credamo
-                if (window.top !== window.self) window.top.location.href = finalUrl.href;
-                else window.location.href = finalUrl.href;
-            } else {
-                alert(`预览模式数据：\n停留时间: ${duration}s\n组别: ${experimentData.condition}\n展开评论: ${experimentData.viewReviews}\n点击加载次数: ${experimentData.loadMoreClicks}`);
-            }
-        };
-
+		// --- 5. 数据回传逻辑 (修复版) ---
+		document.getElementById('returnBtn').onclick = function() {
+		    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
+		    
+		    // 获取 URL 中的 return_url 参数
+		    const urlParams = new URLSearchParams(window.location.search);
+		    let returnUrl = urlParams.get('return_url');
+		
+		    if (returnUrl) {
+		        // 关键修复：如果 URL 被 Credamo 编码了，尝试解码一次
+		        if (returnUrl.indexOf('%') !== -1) returnUrl = decodeURIComponent(returnUrl);
+		
+		        try {
+		            // 构造带参数的新链接
+		            const connector = returnUrl.includes('?') ? '&' : '?';
+		            const finalParams = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
+		            const finalRedirectUrl = returnUrl + connector + finalParams;
+		
+		            // 强制顶级窗口跳转，绕过 iframe 限制
+		            if (window.top !== window.self) {
+		                window.top.location.replace(finalRedirectUrl);
+		            } else {
+		                window.location.replace(finalRedirectUrl);
+		            }
+		        } catch (e) {
+		            console.error("URL 解析失败", e);
+		            alert("返回路径解析失败，请联系研究员");
+		        }
+		    } else {
+		        alert(`预览模式：停留时间 ${duration}s, 组别 ${experimentData.condition}`);
+		    }
+		};
         window.onload = initCondition;
     </script>
 </body>
 </html>
+
