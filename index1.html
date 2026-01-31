@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品浏览实验</title>
+    <style>
+        /* 全局重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 基础样式 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 商品信息区 */
+        .product-section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: flex-start;
+            gap: 40px;
+        }
+
+        .product-image {
+            flex: 1;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            max-width: 400px;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-name {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .product-category {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .product-price {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 24px;
+            color: #333;
+        }
+
+        .product-details-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            line-height: 2;
+        }
+
+        .product-details-table tr {
+            border-bottom: 1px solid #eee;
+        }
+
+        .product-details-table td {
+            padding: 8px 0;
+        }
+
+        .product-details-table td:first-child {
+            color: #888;
+            width: 100px;
+        }
+
+        /* 评论摘要区 */
+        .summary-section {
+            background: #f0f0f0;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .summary-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: #ffa500;
+        }
+
+        /* 星级相关样式 */
+        .rating-summary {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stars {
+            color: #ffa500;
+            font-size: 18px;
+        }
+
+        .rating-count {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .rating-distribution {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .rating-overview {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .rating-stars-display {
+            color: #ffa500;
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .rating-average {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .rating-total {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .rating-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .rating-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .rating-bar-label {
+            width: 35px;
+            color: #666;
+            text-align: left;
+            flex-shrink: 0;
+        }
+
+        .rating-bar-container {
+            flex: 1;
+            height: 16px;
+            background-color: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .rating-bar-fill {
+            height: 100%;
+            background-color: #ffa500;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .rating-bar-percentage {
+            width: 40px;
+            color: #666;
+            text-align: right;
+            flex-shrink: 0;
+            font-size: 13px;
+        }
+
+        /* AIGRS评论摘要样式 */
+        .aigrs-text {
+            color: #333;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .aigrs-negative-text {
+            color: #666;
+        }
+
+        /* 详细评分样式 */
+        .detailed-rating {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .breakdown-item {
+            font-size: 13px;
+            color: #666;
+            padding: 5px 10px;
+            background: #f9f9f9;
+            border-radius: 3px;
+        }
+
+        /* 操作按钮区 */
+        .action-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #5a6268;
+        }
+
+        .btn-primary:active {
+            background: #545b62;
+        }
+
+        /* 原始评论区 */
+        .reviews-section {
+            display: none;
+            background: white;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .reviews-section.active {
+            display: block;
+        }
+
+        .reviews-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: #ffa500;
+        }
+
+        .review-item {
+            padding: 20px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .review-item:last-child {
+            border-bottom: none;
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .review-stars {
+            color: #ffa500;
+            font-size: 14px;
+        }
+
+        .review-title {
+            font-weight: 500;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .review-content {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 8px;
+        }
+
+        /* 加载更多按钮 */
+        .load-more-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn-load-more {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-load-more:hover {
+            background: #5a6268;
+        }
+
+        .btn-load-more:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* 返回问卷按钮 */
+        .return-section {
+            text-align: center;
+            margin-top: 40px;
+            padding-bottom: 40px;
+        }
+
+        .btn-return {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-return:hover {
+            background: #5a6268;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- ① 商品信息区 -->
+    <section class="product-section">
+        <div class="product-image">
+            <img 
+                src="E:\3researchcode\713B16LCrGL._AC_SL1500_.jpg" 
+                alt="AceTrack G1 智能运动手表"
+            >
+        </div>
+        <div class="product-info">
+            <h1 class="product-name">AceTrack G1 智能运动手表</h1>
+            <p class="product-category">分类：数字穿戴设备 / 实验型号：G1-2026</p>
+            <div class="product-price">零售参考价：¥499.00</div>
+            <table class="product-details-table">
+                <tr>
+                    <td>显示屏</td>
+                    <td>1.43" AMOLED 视网膜屏 (466×466 px)</td>
+                </tr>
+                <tr>
+                    <td>传感器</td>
+                    <td>六轴加速度计、PPG心率传感器、红外血氧监测</td>
+                </tr>
+                <tr>
+                    <td>卫星定位</td>
+                    <td>独立双频五星定位 (GPS, GLONASS, Beidou等)</td>
+                </tr>
+                <tr>
+                    <td>防水等级</td>
+                    <td>5ATM (支持50米游泳深度)</td>
+                </tr>
+                <tr>
+                    <td>电池续航</td>
+                    <td>常规模式：14天 / 重度运动模式：5天</td>
+                </tr>
+                <tr>
+                    <td>连接协议</td>
+                    <td>Bluetooth 5.3 / NFC (支持校园模拟卡)</td>
+                </tr>
+                <tr>
+                    <td>运动模式</td>
+                    <td>包含操场跑、高强度间歇训练(HIIT)等117种模式</td>
+                </tr>
+            </table>
+        </div>
+    </section>
+
+    <!-- ② 评分 & 评论摘要区 -->
+    <section class="summary-section" id="summarySection" name="summarySection">
+        <div class="summary-title">用户评论摘要</div>
+        <div id="summaryContent" name="summaryContent"></div>
+    </section>
+
+    <!-- ③ 操作按钮区 -->
+    <section class="action-section" id="actionSection" name="actionSection">
+        <button class="btn-primary" id="viewReviewsBtn" name="viewReviewsBtn">查看原始评论</button>
+    </section>
+
+    <!-- ④ 原始评论区 -->
+    <section class="reviews-section" id="reviewsSection" name="reviewsSection">
+        <div class="reviews-title">用户评论</div>
+        <div id="reviewsContainer" name="reviewsContainer"></div>
+        <div class="load-more-section" id="loadMoreSection" name="loadMoreSection">
+            <button class="btn-load-more" id="loadMoreBtn" name="loadMoreBtn">加载更多评论</button>
+        </div>
+    </section>
+
+    <!-- ⑤ 返回问卷按钮 -->
+    <section class="return-section" id="returnSection" name="returnSection">
+        <button class="btn-return" id="returnBtn" name="returnBtn">完成浏览，返回问卷</button>
+    </section>
+
+    <script>
+        // ==============================================
+        // 核心配置
+        // ==============================================
+        const CONFIG = {
+            reviewsPerLoad: 9,
+            maxLoads: 5,
+            starColor: '#ffa500',
+            postMessageTarget: '*'
+        };
+
+        // ==============================================
+        // 实验数据存储
+        // ==============================================
+        const experimentData = {
+            // 问卷和用户标识
+            survey_id: null,
+            user_id: null,
+            respondent_id: null,
+            
+            // 实验条件
+            condition: null,
+            
+            // 时间戳记录
+            link_click_time: null,
+            page_load_time: new Date().toISOString(),
+            page_load_complete_time: null,
+            dom_content_loaded_time: null,
+            
+            // 交互行为记录
+            view_reviews: false,
+            click_view_reviews: null,
+            reviews_expanded_time: null,
+            
+            // 加载更多行为记录
+            click_load_more: [],
+            total_load_more_clicks: 0,
+            
+            // 页面停留时间
+            page_leave_time: null,
+            
+            // 其他行为
+            return_click_time: null
+        };
+
+        // ==============================================
+        // 评论数据池
+        // ==============================================
+        const allReviews = [
+            { stars: 5, title: "音质很棒", content: "音质清晰，低音效果不错。续航能力也很强，一天使用完全没问题。佩戴舒适，长时间使用不会感到不适。" },
+            { stars: 4, title: "性价比高", content: "价格合理，功能齐全。降噪效果一般，但在安静环境下使用足够。续航表现中规中矩，大约8小时左右。" },
+            { stars: 5, title: "非常满意", content: "蓝牙连接稳定，没有断连问题。音质超出预期，特别是人声部分。舒适度很好，运动时也不会掉落。" },
+            { stars: 3, title: "一般般", content: "续航没有宣传的那么长，实际使用大概6-7小时。音质还可以，但降噪功能效果不明显。佩戴还算舒适。" },
+            { stars: 4, title: "值得购买", content: "整体表现不错，续航能力符合预期。音质清晰，低音效果可以。功能齐全，操作简单。舒适度一般，长时间佩戴会有点累。" },
+            { stars: 5, title: "超出预期", content: "音质非常好，特别是高音部分。续航能力很强，连续使用10小时没问题。降噪效果明显，在嘈杂环境中也能清晰听音乐。" },
+            { stars: 2, title: "不太满意", content: "续航时间太短，只有5-6小时。音质一般，低音不够。佩戴不够舒适，耳朵会疼。降噪功能基本没用。" },
+            { stars: 4, title: "还不错", content: "价格合适，音质对得起这个价位。续航表现正常，大约8小时。功能齐全，蓝牙连接稳定。舒适度还可以。" },
+            { stars: 5, title: "推荐购买", content: "音质出色，特别是人声和乐器分离度很好。续航能力很强，一天使用完全够用。降噪效果不错，能有效减少环境噪音。" },
+            { stars: 3, title: "中规中矩", content: "音质还可以，但不算突出。续航时间一般，大约7小时。降噪功能效果有限。佩戴舒适度中等，长时间使用会有点不适。" },
+            { stars: 4, title: "性价比不错", content: "在这个价位算是很不错的了。音质清晰，续航能力符合预期。功能齐全，操作方便。舒适度还可以，但不如高端产品。" },
+            { stars: 5, title: "非常推荐", content: "音质很棒，低音有力，高音清晰。续航能力超强，连续使用12小时没问题。降噪效果明显，在飞机上也能安静听音乐。" },
+            { stars: 4, title: "满意", content: "整体表现不错，音质清晰，续航能力正常。降噪功能有效，但不如专业降噪耳机。佩戴舒适，适合长时间使用。" },
+            { stars: 3, title: "一般", content: "音质还可以，但低音不够。续航时间大约7小时，不算太长。降噪效果一般。舒适度中等，长时间佩戴会累。" },
+            { stars: 5, title: "物超所值", content: "音质非常好，特别是人声部分很清晰。续航能力很强，一天使用完全没问题。降噪效果不错，能有效减少噪音干扰。" },
+            { stars: 4, title: "值得一试", content: "音质清晰，低音效果可以。续航表现正常，大约8-9小时。功能齐全，蓝牙连接稳定。舒适度还可以，但不如入耳式舒适。" },
+            { stars: 2, title: "不推荐", content: "续航时间太短，只有5小时左右。音质一般，低音不够。降噪功能基本没用。佩戴不够舒适，耳朵会疼。" },
+            { stars: 4, title: "还可以", content: "价格合理，音质对得起这个价位。续航能力正常，大约8小时。功能齐全，操作简单。舒适度一般。" },
+            { stars: 5, title: "很棒", content: "音质出色，特别是高音和低音分离度很好。续航能力很强，连续使用10小时没问题。降噪效果明显，能有效减少环境噪音。" },
+            { stars: 3, title: "普通", content: "音质还可以，但不算突出。续航时间一般，大约7小时。降噪功能效果有限。佩戴舒适度中等。" },
+            { stars: 4, title: "不错", content: "整体表现不错，音质清晰，续航能力符合预期。功能齐全，蓝牙连接稳定。舒适度还可以，适合日常使用。" },
+            { stars: 5, title: "非常满意", content: "音质很棒，低音有力，高音清晰。续航能力超强，连续使用12小时没问题。降噪效果明显，在嘈杂环境中也能清晰听音乐。" },
+            { stars: 4, title: "推荐", content: "音质清晰，低音效果可以。续航表现正常，大约8-9小时。功能齐全，操作方便。舒适度还可以。" },
+            { stars: 3, title: "一般般", content: "音质还可以，但低音不够。续航时间大约7小时，不算太长。降噪效果一般。舒适度中等。" },
+            { stars: 5, title: "物超所值", content: "音质非常好，特别是人声部分很清晰。续航能力很强，一天使用完全没问题。降噪效果不错，能有效减少噪音干扰。" },
+            { stars: 4, title: "值得购买", content: "整体表现不错，音质清晰，续航能力正常。降噪功能有效，但不如专业降噪耳机。佩戴舒适，适合长时间使用。" },
+            { stars: 2, title: "不太满意", content: "续航时间太短，只有5-6小时。音质一般，低音不够。降噪功能基本没用。佩戴不够舒适。" },
+            { stars: 4, title: "还可以", content: "价格合理，音质对得起这个价位。续航能力正常，大约8小时。功能齐全，操作简单。舒适度一般。" },
+            { stars: 5, title: "很棒", content: "音质出色，特别是高音和低音分离度很好。续航能力很强，连续使用10小时没问题。降噪效果明显。" },
+            { stars: 3, title: "中规中矩", content: "音质还可以，但不算突出。续航时间一般，大约7小时。降噪功能效果有限。佩戴舒适度中等，长时间使用会有点不适。" },
+            { stars: 4, title: "不错", content: "整体表现不错，音质清晰，续航能力符合预期。功能齐全，蓝牙连接稳定。舒适度还可以，适合日常使用。" },
+            { stars: 5, title: "非常推荐", content: "音质很棒，低音有力，高音清晰。续航能力超强，连续使用12小时没问题。降噪效果明显，在飞机上也能安静听音乐。" },
+            { stars: 4, title: "满意", content: "音质清晰，低音效果可以。续航表现正常，大约8-9小时。功能齐全，操作方便。舒适度还可以。" },
+            { stars: 3, title: "一般", content: "音质还可以，但低音不够。续航时间大约7小时，不算太长。降噪效果一般。舒适度中等，长时间佩戴会累。" },
+            { stars: 5, title: "物超所值", content: "音质非常好，特别是人声部分很清晰。续航能力很强，一天使用完全没问题。降噪效果不错，能有效减少噪音干扰。" },
+            { stars: 4, title: "值得一试", content: "音质清晰，低音效果可以。续航表现正常，大约8-9小时。功能齐全，蓝牙连接稳定。舒适度还可以，但不如入耳式舒适。" },
+            { stars: 2, title: "不推荐", content: "续航时间太短，只有5小时左右。音质一般，低音不够。降噪功能基本没用。佩戴不够舒适，耳朵会疼。" },
+            { stars: 4, title: "还可以", content: "价格合理，音质对得起这个价位。续航能力正常，大约8小时。功能齐全，操作简单。舒适度一般。" },
+            { stars: 5, title: "很棒", content: "音质出色，特别是高音和低音分离度很好。续航能力很强，连续使用10小时没问题。降噪效果明显，能有效减少环境噪音。" },
+            { stars: 3, title: "普通", content: "音质还可以，但不算突出。续航时间一般，大约7小时。降噪功能效果有限。佩戴舒适度中等。" }
+        ];
+
+        // ==============================================
+        // 工具函数
+        // ==============================================
+        
+        /**
+         * 从URL获取参数
+         * @param {string} name - 参数名
+         * @returns {string|null} 参数值
+         */
+        function getUrlParameter(name) {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(name);
+            } catch (e) {
+                console.error('获取URL参数失败:', e);
+                return null;
+            }
+        }
+
+        /**
+         * 检测是否在iframe中
+         * @returns {boolean}
+         */
+        function isInIframe() {
+            try {
+                return window.self !== window.top;
+            } catch (e) {
+                return true;
+            }
+        }
+
+        /**
+         * 验证URL有效性
+         * @param {string} url - 待验证的URL
+         * @returns {boolean}
+         */
+        function isValidUrl(url) {
+            if (!url || typeof url !== 'string') return false;
+            const trimmed = url.trim();
+            if (trimmed === '') return false;
+            if (trimmed.includes('{{') && trimmed.includes('}}')) return false;
+            
+            try {
+                const urlObj = new URL(trimmed);
+                return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+            } catch (e) {
+                return false;
+            }
+        }
+
+        /**
+         * 生成星级字符串
+         * @param {number} rating - 评分（1-5）
+         * @returns {string} 星级字符串
+         */
+        function generateStarString(rating) {
+            const validRating = Math.max(1, Math.min(5, Math.floor(rating)));
+            return '★'.repeat(validRating) + '☆'.repeat(5 - validRating);
+        }
+
+        // ==============================================
+        // 核心业务逻辑
+        // ==============================================
+        
+        /**
+         * 初始化实验数据（从URL获取参数）
+         */
+        function initExperimentData() {
+            // 获取问卷相关ID
+            experimentData.survey_id = getUrlParameter('survey_id') || 
+                                      getUrlParameter('surveyId') || 
+                                      getUrlParameter('survey') ||
+                                      getUrlParameter('id') ||
+                                      null;
+            
+            experimentData.user_id = getUrlParameter('user_id') || 
+                                    getUrlParameter('userId') || 
+                                    getUrlParameter('user') ||
+                                    null;
+            
+            experimentData.respondent_id = getUrlParameter('respondent_id') || 
+                                          getUrlParameter('respondentId') || 
+                                          getUrlParameter('respondent') ||
+                                          null;
+            
+            // 获取实验条件
+            experimentData.condition = getUrlParameter('condition') || 'rating';
+            
+            // 记录点击链接时间
+            const linkClickTime = getUrlParameter('link_click_time');
+            experimentData.link_click_time = linkClickTime || experimentData.page_load_time;
+        }
+
+        /**
+         * 初始化评论摘要
+         */
+        function initSummary() {
+            const condition = experimentData.condition;
+            const summaryContent = document.getElementById('summaryContent');
+            
+            const ratingData = {
+                average: 4.3,
+                total: 156,
+                distribution: [
+                    { stars: 5, percentage: 65 },
+                    { stars: 4, percentage: 20 },
+                    { stars: 3, percentage: 8 },
+                    { stars: 2, percentage: 4 },
+                    { stars: 1, percentage: 3 }
+                ]
+            };
+
+            switch (condition) {
+                case 'rating':
+                    // 星级分布图
+                    const starsDisplay = generateStarString(ratingData.average);
+                    const distributionHTML = ratingData.distribution.map(item => `
+                        <div class="rating-bar-row">
+                            <div class="rating-bar-label">${item.stars}星</div>
+                            <div class="rating-bar-container">
+                                <div class="rating-bar-fill" style="width: ${item.percentage}%"></div>
+                            </div>
+                            <div class="rating-bar-percentage">${item.percentage}%</div>
+                        </div>
+                    `).join('');
+
+                    summaryContent.innerHTML = `
+                        <div class="rating-distribution">
+                            <div class="rating-overview">
+                                <div class="rating-stars-display">${starsDisplay}</div>
+                                <div class="rating-average">${ratingData.average} out of 5</div>
+                                <div class="rating-total">${ratingData.total} 条评论</div>
+                            </div>
+                            <div class="rating-breakdown">
+                                ${distributionHTML}
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'aigrs_neutral':
+                    // 中立版摘要
+                    summaryContent.innerHTML = `
+                        <div class="aigrs-text">
+                            用户评论显示，该产品在音质、续航和舒适度方面表现稳定。部分用户对降噪功能有不同看法，整体评价较为均衡。
+                        </div>
+                    `;
+                    break;
+
+                case 'aigrs_positive':
+                    // 正向版摘要
+                    summaryContent.innerHTML = `
+                        <div class="aigrs-text">
+                            用户评论显示，该产品在音质、续航和舒适度方面获得较多好评。大部分用户对产品整体表现表示满意，认为性价比较高。
+                        </div>
+                    `;
+                    break;
+
+                case 'aigrs_negative':
+                    // 负向版摘要
+                    summaryContent.innerHTML = `
+                        <div class="aigrs-text aigrs-negative-text">
+                            用户评论显示，该产品在某些方面存在不足。部分用户反馈续航时间未达预期，降噪效果有待提升。
+                        </div>
+                    `;
+                    break;
+
+                case 'detailed_rating':
+                    // 详细评分版
+                    summaryContent.innerHTML = `
+                        <div class="detailed-rating">
+                            <div class="rating-summary">
+                                <div class="stars">${generateStarString(4)}</div>
+                                <div class="rating-count">共 156 条评论</div>
+                            </div>
+                            <div class="rating-breakdown">
+                                <div class="breakdown-item">音质：4.5分</div>
+                                <div class="breakdown-item">续航：4.2分</div>
+                                <div class="breakdown-item">舒适度：4.3分</div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                default:
+                    // 默认摘要
+                    summaryContent.innerHTML = `
+                        <div class="rating-summary">
+                            <div class="stars">${generateStarString(4)}</div>
+                            <div class="rating-count">共 156 条评论</div>
+                        </div>
+                    `;
+            }
+        }
+
+        /**
+         * 渲染评论列表
+         * @param {number} startIndex - 起始索引
+         * @param {number} count - 渲染数量
+         * @returns {number} 新的起始索引
+         */
+        function renderReviews(startIndex, count) {
+            const container = document.getElementById('reviewsContainer');
+            const endIndex = Math.min(startIndex + count, allReviews.length);
+            
+            for (let i = startIndex; i < endIndex; i++) {
+                const review = allReviews[i];
+                const reviewElement = document.createElement('div');
+                reviewElement.className = 'review-item';
+                
+                reviewElement.innerHTML = `
+                    <div class="review-header">
+                        <div class="review-stars">${generateStarString(review.stars)}</div>
+                        <div class="review-title">${review.title}</div>
+                    </div>
+                    <div class="review-content">${review.content}</div>
+                `;
+                
+                container.appendChild(reviewElement);
+            }
+            
+            return endIndex;
+        }
+
+        /**
+         * 向父窗口发送实验数据
+         * @param {object} data - 要发送的数据
+         */
+        function sendDataToParent(data) {
+            if (isInIframe() && window.parent) {
+                // 发送postMessage
+                window.parent.postMessage({
+                    type: 'experiment_complete',
+                    data: data
+                }, CONFIG.postMessageTarget);
+                
+                // 尝试URL跳转
+                const returnUrl = getUrlParameter('return_url');
+                if (isValidUrl(returnUrl)) {
+                    try {
+                        const params = new URLSearchParams();
+                        params.set('experiment_data', JSON.stringify(data));
+                        const separator = returnUrl.includes('?') ? '&' : '?';
+                        const fullUrl = returnUrl + separator + params.toString();
+                        
+                        if (window.top && window.top !== window.self) {
+                            window.top.location.href = fullUrl;
+                        } else {
+                            window.location.href = fullUrl;
+                        }
+                    } catch (e) {
+                        console.error('URL跳转失败:', e);
+                    }
+                }
+            }
+        }
+
+        // ==============================================
+        // 事件绑定
+        // ==============================================
+        
+        /**
+         * 初始化事件监听
+         */
+        function initEventListeners() {
+            let currentReviewIndex = 0;
+            let loadCount = 0;
+
+            // 查看原始评论按钮
+            document.getElementById('viewReviewsBtn').addEventListener('click', function() {
+                if (!experimentData.view_reviews) {
+                    experimentData.view_reviews = true;
+                    experimentData.click_view_reviews = new Date().toISOString();
+                    
+                    // 显示评论区
+                    document.getElementById('reviewsSection').classList.add('active');
+                    
+                    // 首次加载评论
+                    currentReviewIndex = renderReviews(0, CONFIG.reviewsPerLoad);
+                    loadCount = 1;
+                    
+                    // 记录展开完成时间
+                    setTimeout(() => {
+                        experimentData.reviews_expanded_time = new Date().toISOString();
+                    }, 100);
+                    
+                    // 隐藏按钮
+                    this.style.display = 'none';
+                }
+            });
+
+            // 加载更多评论按钮
+            document.getElementById('loadMoreBtn').addEventListener('click', function() {
+                if (loadCount < CONFIG.maxLoads) {
+                    const timestamp = new Date().toISOString();
+                    experimentData.click_load_more.push({
+                        count: loadCount + 1,
+                        timestamp: timestamp,
+                        before_scroll_position: window.scrollY || window.pageYOffset
+                    });
+                    
+                    currentReviewIndex = renderReviews(currentReviewIndex, CONFIG.reviewsPerLoad);
+                    loadCount++;
+                    experimentData.total_load_more_clicks = loadCount;
+                    
+                    // 记录加载后状态
+                    setTimeout(() => {
+                        const lastRecord = experimentData.click_load_more[experimentData.click_load_more.length - 1];
+                        if (lastRecord) {
+                            lastRecord.after_scroll_position = window.scrollY || window.pageYOffset;
+                            lastRecord.load_complete_time = new Date().toISOString();
+                        }
+                    }, 100);
+                    
+                    // 禁用按钮
+                    if (loadCount >= CONFIG.maxLoads) {
+                        this.disabled = true;
+                        this.textContent = '已加载全部评论';
+                    }
+                }
+            });
+
+            // 返回问卷按钮
+            document.getElementById('returnBtn').addEventListener('click', function() {
+                try {
+                    experimentData.return_click_time = new Date().toISOString();
+                    
+                    // 计算停留时间
+                    const endTime = Date.now();
+                    const startTime = new Date(experimentData.page_load_time).getTime();
+                    const staySeconds = Math.max(0, Math.round((endTime - startTime) / 1000));
+                    
+                    // 准备跳转参数
+                    const returnUrl = getUrlParameter('return_url');
+                    if (isValidUrl(returnUrl)) {
+                        const params = new URLSearchParams();
+                        params.set('condition', experimentData.condition || '');
+                        params.set('view_reviews', experimentData.view_reviews ? 1 : 0);
+                        params.set('load_more_cnt', experimentData.total_load_more_clicks || 0);
+                        params.set('stay_time', staySeconds);
+                        
+                        const separator = returnUrl.includes('?') ? '&' : '?';
+                        const fullUrl = returnUrl + separator + params.toString();
+                        
+                        if (window.top && window.top.location) {
+                            window.top.location.href = fullUrl;
+                        } else {
+                            window.location.href = fullUrl;
+                        }
+                    }
+                    
+                    // 发送数据
+                    sendDataToParent({
+                        condition: experimentData.condition,
+                        view_reviews: experimentData.view_reviews,
+                        load_more_cnt: experimentData.total_load_more_clicks,
+                        stay_time: staySeconds,
+                        return_click_time: experimentData.return_click_time
+                    });
+                } catch (e) {
+                    console.error('返回问卷失败:', e);
+                    // 兜底发送数据
+                    sendDataToParent({
+                        condition: experimentData.condition,
+                        view_reviews: experimentData.view_reviews,
+                        load_more_cnt: experimentData.total_load_more_clicks,
+                        error: e.message
+                    });
+                }
+            });
+
+            // 页面可见性变化（替代beforeunload）
+            let pageLeft = false;
+            window.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden' && !pageLeft) {
+                    pageLeft = true;
+                    experimentData.page_leave_time = new Date().toISOString();
+                    
+                    // 发送离开数据
+                    sendDataToParent({
+                        condition: experimentData.condition,
+                        view_reviews: experimentData.view_reviews,
+                        total_load_more_clicks: experimentData.total_load_more_clicks,
+                        page_leave_time: experimentData.page_leave_time
+                    });
+                }
+            });
+
+            // 页面加载完成
+            window.addEventListener('load', () => {
+                experimentData.page_load_complete_time = new Date().toISOString();
+            });
+
+            // 清理事件监听
+            window.addEventListener('unload', () => {
+                document.getElementById('viewReviewsBtn').removeEventListener('click', null);
+                document.getElementById('loadMoreBtn').removeEventListener('click', null);
+                document.getElementById('returnBtn').removeEventListener('click', null);
+            }, { once: true });
+        }
+
+        // ==============================================
+        // 初始化应用
+        // ==============================================
+        function initApp() {
+            // 初始化实验数据
+            initExperimentData();
+            
+            // 初始化评论摘要
+            initSummary();
+            
+            // 绑定事件监听
+            initEventListeners();
+            
+            // 记录DOM加载完成时间
+            experimentData.dom_content_loaded_time = new Date().toISOString();
+        }
+
+        // DOM加载完成后初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+    </script>
+</body>
+</html>
