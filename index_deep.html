@@ -225,32 +225,45 @@
             if (currentIndex >= allReviews.length) document.getElementById('loadMoreBtn').style.display = 'none';
         }
 		
-		document.getElementById('returnBtn').onclick = function() {
-		    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
-		    
-		    // 1. 构造数据字符串
-		    const dataStr = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
-		
-		    // 2. 获取返回地址
-		    const urlParams = new URLSearchParams(window.location.search);
-		    let returnUrl = urlParams.get('return_url');
-		
-		    if (returnUrl) {
-		        // 解码原地址
-		        let finalTarget = decodeURIComponent(returnUrl);
-		        // 3. 将数据拼接到问卷地址后 (判断原地址是否有问号)
-		        finalTarget += (finalTarget.includes('?') ? '&' : '?') + dataStr;
-		        
-		        alert("浏览完毕，正在返回问卷...");
-		        window.location.href = finalTarget;
-		    } else {
-		        alert("未找到返回链接，请手动关闭。数据：" + dataStr);
-		    }
-		};
+		// ... 前面的 renderReviews 函数保持不变 ...
+
+        // --- 核心修复：重新绑定丢失的点击事件 ---
+        
+        // “查看用户原始评论”按钮
+        document.getElementById('viewReviewsBtn').onclick = function() {
+            experimentData.viewReviews = true; // 记录用户看过评论
+            document.getElementById('reviewsSection').classList.add('active'); // 显示评论区
+            this.style.display = 'none'; // 隐藏自己
+            renderReviews(5); // 加载前5条
+        };
+
+        // “点击加载更多评论”按钮
+        document.getElementById('loadMoreBtn').onclick = function() {
+            experimentData.loadMoreClicks++; // 记录点击次数
+            renderReviews(5); // 再加载5条
+        };
+
+        // “完成浏览，返回问卷”按钮 (你原本的代码已有，保持即可)
+        document.getElementById('returnBtn').onclick = function() {
+            const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
+            const dataStr = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
+            const urlParams = new URLSearchParams(window.location.search);
+            let returnUrl = urlParams.get('return_url');
+
+            if (returnUrl) {
+                let finalTarget = decodeURIComponent(returnUrl);
+                finalTarget += (finalTarget.includes('?') ? '&' : '?') + dataStr;
+                alert("浏览完毕，正在返回问卷...");
+                window.location.href = finalTarget;
+            } else {
+                alert("未找到返回链接，请手动关闭。数据：" + dataStr);
+            }
+        };
         
     </script>
 </body>
 </html>
+
 
 
 
