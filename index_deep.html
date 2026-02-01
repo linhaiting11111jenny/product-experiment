@@ -224,48 +224,33 @@
             currentIndex = target;
             if (currentIndex >= allReviews.length) document.getElementById('loadMoreBtn').style.display = 'none';
         }
-
-        document.getElementById('viewReviewsBtn').onclick = function() {
-            experimentData.viewReviews = true;
-            document.getElementById('reviewsSection').classList.add('active');
-            this.style.display = 'none';
-            renderReviews(5);
-        };
-
-        document.getElementById('loadMoreBtn').onclick = function() {
-            experimentData.loadMoreClicks++;
-            renderReviews(5);
-        };
-
-  		document.getElementById('returnBtn').onclick = function() {
-      const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
-      
-      // 构造带参数的返回 URL
-      const urlParams = new URLSearchParams(window.location.search);
-      let returnUrl = urlParams.get('return_url');
-  
-      if (returnUrl) {
-          // 构建新的参数字符串
-          const dataParams = `&stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
-          
-          // 跳转回 Credamo，并将数据拼接在 URL 后面
-          window.location.href = decodeURIComponent(returnUrl) + dataParams;
-      } else {
-          alert("未找到返回地址。停留时长：" + duration + "秒");
-      }
-  };
+		
+		document.getElementById('returnBtn').onclick = function() {
+		    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
+		    
+		    // 1. 构造数据字符串
+		    const dataStr = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
+		
+		    // 2. 获取返回地址
+		    const urlParams = new URLSearchParams(window.location.search);
+		    let returnUrl = urlParams.get('return_url');
+		
+		    if (returnUrl) {
+		        // 解码原地址
+		        let finalTarget = decodeURIComponent(returnUrl);
+		        // 3. 将数据拼接到问卷地址后 (判断原地址是否有问号)
+		        finalTarget += (finalTarget.includes('?') ? '&' : '?') + dataStr;
+		        
+		        alert("浏览完毕，正在返回问卷...");
+		        window.location.href = finalTarget;
+		    } else {
+		        alert("未找到返回链接，请手动关闭。数据：" + dataStr);
+		    }
+		};
+        
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
 
 
 
