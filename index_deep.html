@@ -247,28 +247,32 @@
        // 在 index_deep.html 的 <script> 标签末尾
 		document.getElementById('returnBtn').onclick = function() {
 		    var duration = Math.round((Date.now() - experimentData.startTime) / 1000);
-		    // 构造回传字符串
 		    var dataStr = "stay_time=" + duration + 
 		                  "&is_view=" + (experimentData.viewReviews ? 1 : 0) + 
 		                  "&click_cnt=" + experimentData.loadMoreClicks + 
 		                  "&group=" + experimentData.condition;
 		
+		    // 尝试多种方式获取 return_url
 		    var urlParams = new URLSearchParams(window.location.search);
 		    var returnUrl = urlParams.get('return_url');
 		
-		    if (returnUrl) {
+		    // 如果拿到地址，执行跳转；拿不到，尝试返回上一页
+		    if (returnUrl && returnUrl !== "null") {
 		        var finalTarget = decodeURIComponent(returnUrl);
-		        // 拼接数据到 URL
 		        finalTarget += (finalTarget.indexOf('?') === -1 ? '?' : '&') + dataStr;
 		        window.location.href = finalTarget;
 		    } else {
-		        alert("未找到返回链接！数据为：" + dataStr);
+		        // 备选方案：如果真的丢了地址，尝试直接后退（但这无法带回数据，仅做保底）
+		        console.error("Return URL not found, trying history.back()");
+		        alert("准备返回问卷，请确保数据已记录。");
+		        window.history.back();
 		    }
 		};
         
     </script>
 </body>
 </html>
+
 
 
 
