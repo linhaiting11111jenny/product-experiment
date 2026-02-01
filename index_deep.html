@@ -244,25 +244,32 @@
         };
 
         // “完成浏览，返回问卷”按钮 (你原本的代码已有，保持即可)
-        document.getElementById('returnBtn').onclick = function() {
-            const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
-            const dataStr = `stay_time=${duration}&is_view=${experimentData.viewReviews ? 1 : 0}&click_cnt=${experimentData.loadMoreClicks}&group=${experimentData.condition}`;
-            const urlParams = new URLSearchParams(window.location.search);
-            let returnUrl = urlParams.get('return_url');
-
-            if (returnUrl) {
-                let finalTarget = decodeURIComponent(returnUrl);
-                finalTarget += (finalTarget.includes('?') ? '&' : '?') + dataStr;
-                alert("浏览完毕，正在返回问卷...");
-                window.location.href = finalTarget;
-            } else {
-                alert("未找到返回链接，请手动关闭。数据：" + dataStr);
-            }
-        };
+       // 在 index_deep.html 的 <script> 标签末尾
+		document.getElementById('returnBtn').onclick = function() {
+		    var duration = Math.round((Date.now() - experimentData.startTime) / 1000);
+		    // 构造回传字符串
+		    var dataStr = "stay_time=" + duration + 
+		                  "&is_view=" + (experimentData.viewReviews ? 1 : 0) + 
+		                  "&click_cnt=" + experimentData.loadMoreClicks + 
+		                  "&group=" + experimentData.condition;
+		
+		    var urlParams = new URLSearchParams(window.location.search);
+		    var returnUrl = urlParams.get('return_url');
+		
+		    if (returnUrl) {
+		        var finalTarget = decodeURIComponent(returnUrl);
+		        // 拼接数据到 URL
+		        finalTarget += (finalTarget.indexOf('?') === -1 ? '?' : '&') + dataStr;
+		        window.location.href = finalTarget;
+		    } else {
+		        alert("未找到返回链接！数据为：" + dataStr);
+		    }
+		};
         
     </script>
 </body>
 </html>
+
 
 
 
