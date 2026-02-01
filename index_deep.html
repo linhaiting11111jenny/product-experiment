@@ -244,34 +244,42 @@
         };
 
         // “完成浏览，返回问卷”按钮 (你原本的代码已有，保持即可)
-       // 在 index_deep.html 的 <script> 标签末尾
 		document.getElementById('returnBtn').onclick = function() {
-		    var duration = Math.round((Date.now() - experimentData.startTime) / 1000);
-		    var dataStr = "stay_time=" + duration + 
+		    // 1. 计算实验数据
+			var duration = Math.round((Date.now() - experimentData.startTime) / 1000);
+			var dataStr = "stay_time=" + duration + 
 		                  "&is_view=" + (experimentData.viewReviews ? 1 : 0) + 
 		                  "&click_cnt=" + experimentData.loadMoreClicks + 
 		                  "&group=" + experimentData.condition;
 		
-		    // 尝试多种方式获取 return_url
-		    var urlParams = new URLSearchParams(window.location.search);
-		    var returnUrl = urlParams.get('return_url');
+		    // 2. 从 URL 中精准提取 return_url
+		    var rUrl = "";
+		    var search = window.location.search.substring(1);
+		    var parts = search.split("&");
+		    for (var i = 0; i < parts.length; i++) {
+		        var p = parts[i].split("=");
+		        if (p[0] === "return_url") {
+		            rUrl = decodeURIComponent(p[1]);
+		            break;
+		        }
+		    }
 		
-		    // 如果拿到地址，执行跳转；拿不到，尝试返回上一页
-		    if (returnUrl && returnUrl !== "null") {
-		        var finalTarget = decodeURIComponent(returnUrl);
-		        finalTarget += (finalTarget.indexOf('?') === -1 ? '?' : '&') + dataStr;
-		        window.location.href = finalTarget;
+		    // 3. 执行跳转
+		    if (rUrl && rUrl !== "") {
+		        // 拼接数据并跳转
+		        var connector = rUrl.indexOf("?") === -1 ? "?" : "&";
+		        window.location.href = rUrl + connector + dataStr;
 		    } else {
-		        // 备选方案：如果真的丢了地址，尝试直接后退（但这无法带回数据，仅做保底）
-		        console.error("Return URL not found, trying history.back()");
-		        alert("准备返回问卷，请确保数据已记录。");
+		        // 最终兜底：弹出数据并尝试后退
+		        alert("无法自动跳回问卷。请手动关闭并确认数据：" + dataStr);
 		        window.history.back();
 		    }
 		};
-        
+		        
     </script>
 </body>
 </html>
+
 
 
 
