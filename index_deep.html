@@ -246,34 +246,27 @@
         // “完成浏览，返回问卷”按钮 (你原本的代码已有，保持即可)
 		// --- 核心修复：完善返回逻辑 ---
 		document.getElementById('returnBtn').onclick = function() {
-		    // A. 准备要回传的数据 (行为数据)
-		    var duration = Math.round((Date.now() - experimentData.startTime) / 1000);
-		    var dataStr = "stay_time=" + duration + 
-		                  "&is_view=" + (experimentData.viewReviews ? 1 : 0) + 
-		                  "&click_cnt=" + experimentData.loadMoreClicks;
+		    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
+		    const isView = experimentData.viewReviews ? 1 : 0;
+		    const clickCnt = experimentData.loadMoreClicks;
 		
-		    // B. 获取 Credamo 传过来的“回家的门票” (URL 中的 return_url 参数)
-		    var urlParams = new URLSearchParams(window.location.search);
-		    var rUrl = urlParams.get('return_url'); 
+		    const urlParams = new URLSearchParams(window.location.search);
+		    const rUrl = urlParams.get('return_url');
 		
 		    if (rUrl) {
-		        // 解码 URL（因为 Credamo 传过来时是经过编码的）
-		        rUrl = decodeURIComponent(rUrl);
-		        
-		        // C. 拼接数据并跳转
-		        // 判断原链接是否有问号，决定用 ? 还是 &
-		        var connector = rUrl.indexOf("?") === -1 ? "?" : "&";
-		        var finalDestination = rUrl + connector + dataStr;
-		        
-		        window.location.replace(finalDestination);
+		        // 拼接要回传给 Credamo 的变量名（注意：这里的变量名要和你在 Credamo 后台定义的保持一致）
+		        const dataStr = `stayTime=${duration}&isView=${isView}&clickCnt=${clickCnt}`;
+		        const finalUrl = rUrl + (rUrl.indexOf('?') > -1 ? '&' : '?') + dataStr;
+		        window.location.replace(finalUrl);
 		    } else {
-		        alert("错误：未检测到返回地址。请从 Credamo 问卷中点击按钮进入。");
+		        alert("未找到返回地址");
 		    }
-		};
+};
 		        
     </script>
 </body>
 </html>
+
 
 
 
