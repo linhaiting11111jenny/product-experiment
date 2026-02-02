@@ -244,41 +244,48 @@
         };
 
         // “完成浏览，返回问卷”按钮 (你原本的代码已有，保持即可)
+		// --- 核心修复：完善返回逻辑 ---
 		document.getElementById('returnBtn').onclick = function() {
+		    // 1. 整理要传回的数据
 		    var duration = Math.round((Date.now() - experimentData.startTime) / 1000);
 		    var dataStr = "stay_time=" + duration + 
 		                  "&is_view=" + (experimentData.viewReviews ? 1 : 0) + 
 		                  "&click_cnt=" + experimentData.loadMoreClicks + 
 		                  "&group=" + experimentData.condition;
 		
-		    // 获取当前页面的完整 URL 搜索参数
+		    // 2. 获取 Credamo 传来的返回地址
 		    var search = window.location.search;
 		    var rUrl = "";
-		
-		    // 尝试通过精准正则匹配 return_url
+		    
+		    // 使用更健壮的正则获取 return_url
 		    var match = search.match(/[?&]return_url=([^&]*)/);
 		    if (match) {
 		        rUrl = decodeURIComponent(match[1]);
 		    }
 		
 		    if (rUrl && rUrl !== "") {
-		        // 关键点：Credamo 的地址通常带有 #/s/...
-		        // 我们要确保参数拼在最后，且不破坏 Hash 结构
+		        // --- 关键改进：处理 Credamo 的特殊 URL ---
+		        // 如果 return_url 已经包含 ?，用 & 拼接，否则用 ?
 		        var connector = rUrl.indexOf("?") === -1 ? "?" : "&";
+		        
+		        // 拼接最终地址
 		        var finalDestination = rUrl + connector + dataStr;
 		        
-		        console.log("正在回跳至: " + finalDestination);
-		        window.location.href = finalDestination;
+		        console.log("准备跳转: " + finalDestination);
+		        
+		        // 建议：使用 replace 而不是 href，可以防止用户点击后退时卡在中间页
+		        window.location.replace(finalDestination);
 		    } else {
-		        alert("错误：未检测到返回地址。请检查 Credamo 按钮链接是否带有 return_url 参数。");
-		        // 即使失败，也展示一下数据，方便你调试
-		        console.log("当前数据：" + dataStr);
+		        // 如果在本地测试，或者没带 return_url 参数
+		        alert("未发现返回地址。\n当前数据: " + dataStr + "\n请确保通过问卷链接进入此页面。");
+		        console.log("数据详情：" + dataStr);
 		    }
 		};
 		        
     </script>
 </body>
 </html>
+
 
 
 
