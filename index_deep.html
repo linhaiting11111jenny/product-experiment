@@ -246,45 +246,35 @@
         // “完成浏览，返回问卷”按钮 (你原本的代码已有，保持即可)
 		// --- 核心修复：完善返回逻辑 ---
 		document.getElementById('returnBtn').onclick = function() {
-		    // 1. 整理要传回的数据
+		    // A. 准备要回传的数据 (行为数据)
 		    var duration = Math.round((Date.now() - experimentData.startTime) / 1000);
 		    var dataStr = "stay_time=" + duration + 
 		                  "&is_view=" + (experimentData.viewReviews ? 1 : 0) + 
-		                  "&click_cnt=" + experimentData.loadMoreClicks + 
-		                  "&group=" + experimentData.condition;
+		                  "&click_cnt=" + experimentData.loadMoreClicks;
 		
-		    // 2. 获取 Credamo 传来的返回地址
-		    var search = window.location.search;
-		    var rUrl = "";
-		    
-		    // 使用更健壮的正则获取 return_url
-		    var match = search.match(/[?&]return_url=([^&]*)/);
-		    if (match) {
-		        rUrl = decodeURIComponent(match[1]);
-		    }
+		    // B. 获取 Credamo 传过来的“回家的门票” (URL 中的 return_url 参数)
+		    var urlParams = new URLSearchParams(window.location.search);
+		    var rUrl = urlParams.get('return_url'); 
 		
-		    if (rUrl && rUrl !== "") {
-		        // --- 关键改进：处理 Credamo 的特殊 URL ---
-		        // 如果 return_url 已经包含 ?，用 & 拼接，否则用 ?
-		        var connector = rUrl.indexOf("?") === -1 ? "?" : "&";
+		    if (rUrl) {
+		        // 解码 URL（因为 Credamo 传过来时是经过编码的）
+		        rUrl = decodeURIComponent(rUrl);
 		        
-		        // 拼接最终地址
+		        // C. 拼接数据并跳转
+		        // 判断原链接是否有问号，决定用 ? 还是 &
+		        var connector = rUrl.indexOf("?") === -1 ? "?" : "&";
 		        var finalDestination = rUrl + connector + dataStr;
 		        
-		        console.log("准备跳转: " + finalDestination);
-		        
-		        // 建议：使用 replace 而不是 href，可以防止用户点击后退时卡在中间页
 		        window.location.replace(finalDestination);
 		    } else {
-		        // 如果在本地测试，或者没带 return_url 参数
-		        alert("未发现返回地址。\n当前数据: " + dataStr + "\n请确保通过问卷链接进入此页面。");
-		        console.log("数据详情：" + dataStr);
+		        alert("错误：未检测到返回地址。请从 Credamo 问卷中点击按钮进入。");
 		    }
 		};
 		        
     </script>
 </body>
 </html>
+
 
 
 
