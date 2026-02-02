@@ -245,27 +245,60 @@
 
         // “完成浏览，返回问卷”按钮 (你原本的代码已有，保持即可)
 		// --- 核心修复：完善返回逻辑 ---
+// 		document.getElementById('returnBtn').onclick = function() {
+// 		    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
+// 		    const isView = experimentData.viewReviews ? 1 : 0;
+// 		    const clickCnt = experimentData.loadMoreClicks;
+		
+// 		    const urlParams = new URLSearchParams(window.location.search);
+// 		    const rUrl = urlParams.get('return_url');
+		
+// 		    if (rUrl) {
+// 		        // 拼接要回传给 Credamo 的变量名（注意：这里的变量名要和你在 Credamo 后台定义的保持一致）
+// 		        const dataStr = `stayTime=${duration}&isView=${isView}&clickCnt=${clickCnt}`;
+// 		        const finalUrl = rUrl + (rUrl.indexOf('?') > -1 ? '&' : '?') + dataStr;
+// 		        window.location.replace(finalUrl);
+// 		    } else {
+// 		        alert("未找到返回地址");
+// 		    }
+// };
 		document.getElementById('returnBtn').onclick = function() {
 		    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
 		    const isView = experimentData.viewReviews ? 1 : 0;
 		    const clickCnt = experimentData.loadMoreClicks;
 		
 		    const urlParams = new URLSearchParams(window.location.search);
-		    const rUrl = urlParams.get('return_url');
+		    let rUrl = urlParams.get('return_url');
 		
 		    if (rUrl) {
-		        // 拼接要回传给 Credamo 的变量名（注意：这里的变量名要和你在 Credamo 后台定义的保持一致）
+		        rUrl = decodeURIComponent(rUrl); // 先解码确保地址正确
 		        const dataStr = `stayTime=${duration}&isView=${isView}&clickCnt=${clickCnt}`;
-		        const finalUrl = rUrl + (rUrl.indexOf('?') > -1 ? '&' : '?') + dataStr;
+		        
+		        let finalUrl;
+		        // 核心修复：处理 # 号
+		        if (rUrl.indexOf('#') > -1) {
+		            // 将参数插入到 # 号之前
+		            const parts = rUrl.split('#');
+		            const connector = parts[0].indexOf('?') > -1 ? '&' : '?';
+		            finalUrl = parts[0] + connector + dataStr + '#' + parts[1];
+		        } else {
+		            // 普通拼接
+		            const connector = rUrl.indexOf('?') > -1 ? '&' : '?';
+		            finalUrl = rUrl + connector + dataStr;
+		        }
+		
+		        // 调试用：跳转前弹窗确认链接对不对
+		        // alert("准备回跳：" + finalUrl); 
 		        window.location.replace(finalUrl);
 		    } else {
-		        alert("未找到返回地址");
+		        alert("未找到返回地址，当前数据：" + duration);
 		    }
-};
+		};
 		        
     </script>
 </body>
 </html>
+
 
 
 
