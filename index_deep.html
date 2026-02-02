@@ -263,41 +263,36 @@
 // 		    }
 // };
 		document.getElementById('returnBtn').onclick = function() {
-		    const duration = Math.round((Date.now() - experimentData.startTime) / 1000);
-		    const isView = experimentData.viewReviews ? 1 : 0;
-		    const clickCnt = experimentData.loadMoreClicks;
+		    var duration = Math.round((Date.now() - experimentData.startTime) / 1000);
+		    var isView = experimentData.viewReviews ? 1 : 0;
+		    var clickCnt = experimentData.loadMoreClicks;
 		
-		    const urlParams = new URLSearchParams(window.location.search);
-		    let rUrl = urlParams.get('return_url');
+		    var urlParams = new URLSearchParams(window.location.search);
+		    var rUrl = urlParams.get('return_url');
 		
 		    if (rUrl) {
-		        rUrl = decodeURIComponent(rUrl); // 先解码确保地址正确
-		        const dataStr = `stayTime=${duration}&isView=${isView}&clickCnt=${clickCnt}`;
+		        rUrl = decodeURIComponent(rUrl);
+		        var myData = "stayTime=" + duration + "&isView=" + isView + "&clickCnt=" + clickCnt;
 		        
-		        let finalUrl;
-		        // 核心修复：处理 # 号
+		        // 核心：强制把参数插在 # 之前，这是单页面应用捕获参数的唯一标准姿势
+		        var finalUrl;
 		        if (rUrl.indexOf('#') > -1) {
-		            // 将参数插入到 # 号之前
-		            const parts = rUrl.split('#');
-		            const connector = parts[0].indexOf('?') > -1 ? '&' : '?';
-		            finalUrl = parts[0] + connector + dataStr + '#' + parts[1];
+		            var parts = rUrl.split('#');
+		            var connector = parts[0].indexOf('?') > -1 ? '&' : '?';
+		            finalUrl = parts[0] + connector + myData + '#' + parts[1];
 		        } else {
-		            // 普通拼接
-		            const connector = rUrl.indexOf('?') > -1 ? '&' : '?';
-		            finalUrl = rUrl + connector + dataStr;
+		            var connector = rUrl.indexOf('?') > -1 ? '&' : '?';
+		            finalUrl = rUrl + connector + myData;
 		        }
-		
-		        // 调试用：跳转前弹窗确认链接对不对
-		        // alert("准备回跳：" + finalUrl); 
 		        window.location.replace(finalUrl);
 		    } else {
-		        alert("未找到返回地址，当前数据：" + duration);
+		        alert("未找到返回地址");
 		    }
 		};
-		        
     </script>
 </body>
 </html>
+
 
 
 
